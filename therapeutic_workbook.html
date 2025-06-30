@@ -80,9 +80,16 @@
     </section>
 
     <!-- SECTION: Stimmung (Gefühlsstern) -->
-    <section id="mood" class="content-section" role="tabpanel" aria-hidden="true">
-      <h2>😊 Wie fühlst du dich?</h2>
-      <label>Stimmungslage (schnell):</label>
+    <section id="mood" class="content-section mood-section" role="tabpanel" aria-hidden="true">
+      <h2>😊 Wie fühlst du dich? <span class="mood-hint" title="Hier kannst du deine aktuelle Stimmung und Gefühle festhalten.">ℹ️</span></h2>
+      <div class="tip mood-tip">💡 Wähle deine Stimmung, Gefühle und Körperreaktionen. Je genauer du bist, desto besser kannst du dich selbst verstehen!</div>
+      <div class="mood-steps">
+        <span class="step active">1. Stimmung wählen</span>
+        <span class="step">2. Gefühle & Intensität</span>
+        <span class="step">3. Körper & Auslöser</span>
+        <span class="step">4. Umgang finden</span>
+      </div>
+      <label>Stimmungslage (schnell): <span class="mood-help" title="Wähle aus, wie du dich gerade fühlst.">❔</span></label>
       <select id="moodType" onchange="updateMoodDropdown()">
         <option value="">-- Wähle --</option>
         <option value="happy">😊 Freude</option>
@@ -91,8 +98,7 @@
         <option value="sad">😢 Trauer</option>
         <option value="calm">😐 Gleichgültigkeit</option>
       </select>
-      <!-- 1. GEFÜHLSSTERN-AUSWAHL -->
-      <div class="emotion-grid">
+      <div class="emotion-grid" id="emotionGrid">
         <button class="emotion-btn" data-category="FREUDE" onclick="toggleEmotion(this)">😊 Freude</button>
         <button class="emotion-btn" data-category="ZUNEIGUNG" onclick="toggleEmotion(this)">💖 Zuneigung</button>
         <button class="emotion-btn" data-category="TRAUER" onclick="toggleEmotion(this)">😢 Trauer</button>
@@ -106,19 +112,23 @@
         <button class="emotion-btn sub" data-parent="ZUNEIGUNG" onclick="toggleEmotion(this)">Liebe</button>
         <button class="emotion-btn sub" data-parent="GLEICHGÜLTIGKEIT" onclick="toggleEmotion(this)">Abneigung</button>
       </div>
-      <!-- 2. INTENSITÄT -->
-      <label>Intensität: <span id="moodLevelText">Mittel</span></label>
-      <input type="range" id="moodLevel" min="1" max="5" value="3" oninput="updateMoodLevel(this.value)" list="moodMarkers">
-      <datalist id="moodMarkers">
-        <option value="1" label="Gering"></option>
-        <option value="2" label="Leicht"></option>
-        <option value="3" label="Mittel"></option>
-        <option value="4" label="Stark"></option>
-        <option value="5" label="Extrem"></option>
-      </datalist>
-      <canvas id="moodChart" width="300" height="100"></canvas>
-      <!-- 3. KÖRPERREAKTIONEN -->
-      <label>Körperreaktionen (Mehrfachauswahl):</label>
+      <div id="emotion-intensities"></div>
+      <!-- Freitextfeld für Gefühle + Gesamt-Intensitätsregler -->
+      <div class="form-group">
+        <label for="moodDescription">Gefühle in eigenen Worten:</label>
+        <textarea id="moodDescription" placeholder="Beschreibe deine Stimmung, Gefühle oder Nuancen..." rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="moodIntensity">Wie stark ist dieses Gefühl insgesamt?</label>
+        <input type="range" id="moodIntensity" min="1" max="10" value="5" oninput="document.getElementById('moodIntensityValue').innerText=this.value">
+        <span id="moodIntensityValue">5</span>/10
+      </div>
+      <div class="mood-explanation">
+        <strong>Was ist der Gefühlsstern?</strong> <br>
+        <span>Der Gefühlsstern hilft dir, verschiedene Gefühle zu erkennen und zu benennen. Klicke auf die Buttons, um deine aktuellen Gefühle auszuwählen. Für jedes Gefühl kannst du die Intensität angeben. Der Durchschnitt wird unten angezeigt.</span>
+      </div>
+      <div id="average-intensity-box" class="mood-explanation"></div>
+      <label>Körperreaktionen (Mehrfachauswahl): <span class="mood-help" title="Wie reagiert dein Körper?">❔</span></label>
       <div class="checkbox-grid">
         <label><input type="checkbox" name="bodyReactions" value="Herzrasen"> Herzrasen</label>
         <label><input type="checkbox" name="bodyReactions" value="Schwitzen"> Schwitzen</label>
@@ -127,15 +137,61 @@
         <label><input type="checkbox" name="bodyReactions" value="Muskelspannung"> Muskelspannung</label>
         <label><input type="checkbox" name="bodyReactions" value="Übelkeit"> Übelkeit</label>
       </div>
-      <!-- 4. AUSLÖSER (ABC-Modell) -->
-      <label>Ausgangssituation (A):</label>
+      <div class="mood-explanation">
+        <strong>Körper & Gefühle:</strong> <br>
+        <span>Dein Körper zeigt oft zuerst, wie es dir geht. Hier sind typische Signale:</span>
+        <div class="body-signals-grid">
+          <div class="disorder-box">
+            <h4>Komplexe PTBS 🛡️</h4>
+            <ul>
+              <li>Plötzliche Anspannung/Erstarrung</li>
+              <li>Tunnel-/eingeengtes Sehen</li>
+              <li>Gefühlstaubheit im Körper</li>
+              <li>Herzrasen ohne Grund</li>
+              <li>Schwierigkeiten beim Atmen</li>
+            </ul>
+          </div>
+          <div class="disorder-box">
+            <h4>ADHS 🎯</h4>
+            <ul>
+              <li>Innere Unruhe/Kribbeln</li>
+              <li>Gedankenkarussell spürbar</li>
+              <li>Körperliche Rastlosigkeit</li>
+              <li>Hunger auf Süßes/Koffein</li>
+              <li>Erschöpfung nach Reizen</li>
+            </ul>
+          </div>
+          <div class="disorder-box">
+            <h4>Borderline 🌊</h4>
+            <ul>
+              <li>Starke Gefühlswellen im Körper</li>
+              <li>Anspannung unter der Haut</li>
+              <li>Druck in Brust/Kopf</li>
+              <li>Impuls zu selbstverletzen</li>
+              <li>Wechsel zw. Energie/Erschöpfung</li>
+            </ul>
+          </div>
+          <div class="disorder-box">
+            <h4>Autismus-Spektrum 🧩</h4>
+            <ul>
+              <li>Überempfindlichkeit auf Reize</li>
+              <li>Körperliche Überlastung</li>
+              <li>Probleme mit Temperatur/Berührung</li>
+              <li>Verdauungsbeschwerden bei Stress</li>
+              <li>Stimming-Bedürfnis spüren</li>
+            </ul>
+          </div>
+        </div>
+        <p class="signals-tip">💡 Diese Signale sind typische Beispiele. Deine persönlichen Körperreaktionen können anders sein.</p>
+      </div>
+      <label>Ausgangssituation (A): <span class="mood-help" title="Was ist passiert?">❔</span></label>
       <textarea id="situation" placeholder="Was ist objektiv passiert?"></textarea>
-      <!-- 5. BEWERTUNG (ABC-Modell) -->
-      <label>Persönliche Bewertung (B):</label>
+      <button class="btn btn-secondary btn-xs" onclick="copyToTriggerDiary()">✔️ Als Trigger speichern</button>
+      <label>Persönliche Bewertung (B): <span class="mood-help" title="Was hast du darüber gedacht?">❔</span></label>
       <textarea id="thoughtsMood" placeholder="Was bedeutet das für mich?"></textarea>
-      <!-- 6. COPING -->
+      <button class="btn btn-secondary btn-xs" onclick="copyToThoughts('thoughtsMood')">✔️ Als Gedanken speichern</button>
       <div class="coping-box">
-        <label>Umgang damit:</label>
+        <label>Umgang damit: <span class="mood-help" title="Wie bist du damit umgegangen oder möchtest du damit umgehen?">❔</span></label>
         <select id="copingStrategy">
           <option value="">-- Wähle --</option>
           <option value="grounding">Grounding-Technik</option>
@@ -143,8 +199,13 @@
           <option value="accept">Akzeptanz</option>
         </select>
         <button onclick="suggestCoping()">Vorschlag</button>
+        <button class="btn btn-secondary btn-xs ml-half-em" onclick="copyToThoughts('copingStrategy', true)">✔️ Als Gedanken speichern</button>
       </div>
-      <button class="btn btn-success" onclick="saveMood()">Speichern</button>
+      <div class="mood-explanation">
+        <strong>Tipp:</strong> <br>
+        <span>Wenn du nicht weiterweißt, klicke auf "Vorschlag" für eine hilfreiche Strategie!</span>
+      </div>
+      <button class="btn btn-success mood-save-btn" onclick="saveMood()">Speichern</button>
     </section>
 
     <!-- SECTION: Gedanken-Sammler (angepasst) -->
@@ -153,7 +214,7 @@
       <div class="tip">🧠 Manchmal hilft es, Gedanken einfach "rauszuschreiben" und loszulassen.</div>
       <div class="form-group">
         <label for="current-thoughts">Was geht dir durch den Kopf?</label>
-        <textarea id="current-thoughts" placeholder="Schreibe alles auf, was dich beschäftigt..." rows="6"></textarea>
+        <textarea id="current-thoughts" placeholder="Schreibe alles, was dich beschäftigt..." rows="6"></textarea>
       </div>
       <div class="form-group">
         <label for="thought-type">Art der Gedanken:</label>
@@ -251,6 +312,7 @@
           <option value="json">JSON (für therapeutische GPTs)</option>
           <option value="text">Lesbare Zusammenfassung</option>
           <option value="anonymous">Anonymisierte Daten</option>
+          <option value="markdown">Markdown (für Notizen)</option>
         </select>
       </div>
 
@@ -357,6 +419,67 @@
       </table>
       <div class="trigger-warning" id="clusterTriggerWarning" class="hidden"></div>
     </section>
+
+    <!-- Onboarding/Willkommens-Slide -->
+    <div id="onboarding-slide" class="slide active" style="display:block;">
+      <h2>🧠 Willkommen zum Vier-Ohren-Training</h2>
+      <p>Dieses Modul kann sensible Themen berühren. Lies diese Hinweise aufmerksam:</p>
+      <ul>
+        <li>🔒 <strong>Datenschutz:</strong> Alle Eingaben werden <em>nur lokal</em> im Browser gespeichert.</li>
+        <li>🫂 <strong>Trauma-Sensitiv:</strong> Manche Reflexionen können starke Gefühle auslösen. Nutze Notfall-Strategien!</li>
+        <li>🧰 <strong>DBT-Skills:</strong> Grounding, Reizoffenheit, Radikale Akzeptanz.</li>
+      </ul>
+      <button onclick="startTraining()">✅ Start Training</button>
+    </div>
+
+    <div id="training-slides" style="display:none;">
+      <div id="slide-container">
+        <div class="slide active">
+          <h2>Was ist das Vier-Ohren-Modell?</h2>
+          <p>Jede Nachricht hat vier Seiten: Sachinhalt, Selbstoffenbarung, Beziehung und Appell.</p>
+        </div>
+        <div class="slide">
+          <h2>Die vier Seiten im Detail</h2>
+          <p>Beispiel: „Es ist kein Kaffee mehr da.“</p>
+          <ul>
+            <li><strong>Sachinhalt:</strong> Faktische Info</li>
+            <li><strong>Selbstoffenbarung:</strong> Was sagt das über mich?</li>
+            <li><strong>Beziehung:</strong> Wie sehe ich dich?</li>
+            <li><strong>Appell:</strong> Was will ich erreichen?</li>
+          </ul>
+        </div>
+        <div class="slide">
+          <h2>Was passiert bei einseitigem Hören?</h2>
+          <p>Einseitiges Hören kann Missverständnisse und emotionale Verletzungen auslösen.</p>
+          <p><em>Root Cause:</em> Frag dich: „Warum höre ich immer mit diesem Ohr?“</p>
+        </div>
+        <div class="slide">
+          <h2>Root Cause Chart (5 Why)</h2>
+          <label>Warum höre ich Beziehungsohr?</label>
+          <textarea id="why1"></textarea>
+          <label>Warum?</label>
+          <textarea id="why2"></textarea>
+          <label>Warum?</label>
+          <textarea id="why3"></textarea>
+          <label>Warum?</label>
+          <textarea id="why4"></textarea>
+          <label>Warum?</label>
+          <textarea id="why5"></textarea>
+        </div>
+        <div class="slide">
+          <h2>Trigger-Logik & DBT-Skills</h2>
+          <textarea id="triggerInput" placeholder="Schreibe hier deine Gedanken..."></textarea>
+          <div id="skillBox"><strong>Skills:</strong> Check the Facts, DEAR MAN, Radikale Akzeptanz</div>
+        </div>
+        <div class="slide">
+          <h2>Dein Kommunikationsmuster</h2>
+          <canvas id="ohrChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+      <button onclick="prevSlide()">⬅️ Zurück</button>
+      <button onclick="nextSlide()">➡️ Weiter</button>
+      <button onclick="exportSlides()">📤 Export als Markdown</button>
+    </div>
   </div>
 
   <!-- Help Modal -->
@@ -537,31 +660,116 @@
       "ÄRGER": "Time-out + kognitive Umstrukturierung",
       "TRAUER": "Akzeptanz + Selbstfürsorge"
     };
+    let emotionIntensities = {};
     function toggleEmotion(btn) {
       btn.classList.toggle('active');
+      const emotion = btn.textContent.trim();
+      if (btn.classList.contains('active')) {
+        // Add slider for this emotion
+        emotionIntensities[emotion] = 3;
+      } else {
+        delete emotionIntensities[emotion];
+      }
+      renderEmotionIntensities();
+      updateAverageIntensity();
       // Deaktiviere gegensätzliche Emotionen
       const opposites = { "FREUDE": "TRAUER", "TRAUER": "FREUDE", "ANGST": "ZUNEIGUNG" };
       const category = btn.dataset.category || btn.dataset.parent;
       if (opposites[category]) {
-        document.querySelectorAll(`[data-category="${opposites[category]}"] , [data-parent="${opposites[category]}"]`).forEach(el => el.classList.remove('active'));
+        document.querySelectorAll(`[data-category="${opposites[category]}"] , [data-parent="${opposites[category]}"]`).forEach(el => {
+          el.classList.remove('active');
+          delete emotionIntensities[el.textContent.trim()];
+        });
+        renderEmotionIntensities();
+        updateAverageIntensity();
       }
     }
-    function updateMoodLevel(value) {
+    function renderEmotionIntensities() {
+      const container = document.getElementById('emotion-intensities');
+      container.innerHTML = '';
+      Object.keys(emotionIntensities).forEach(emotion => {
+        const id = 'slider-' + emotion.replace(/\s/g, '');
+        const color = getEmotionColor(emotion);
+        container.innerHTML += `
+          <div class="emotion-intensity-row">
+            <label for="${id}">${emotion} Intensität:
+              <span class="mood-help" title="Wie stark ist dieses Gefühl gerade?">❔</span>
+            </label>
+            <input type="range" min="1" max="5" value="${emotionIntensities[emotion]}" id="${id}" style="accent-color:${color};width:50%;" oninput="setEmotionIntensity('${emotion}', this.value)">
+            <span id="${id}-val">${getIntensityLabel(emotionIntensities[emotion])}</span>
+          </div>
+        `;
+      });
+    }
+    function setEmotionIntensity(emotion, value) {
+      emotionIntensities[emotion] = parseInt(value);
+      document.getElementById('slider-' + emotion.replace(/\s/g, '') + '-val').textContent = getIntensityLabel(value);
+      updateAverageIntensity();
+    }
+    function getIntensityLabel(val) {
       const labels = ["Gering", "Leicht", "Mittel", "Stark", "Extrem"];
-      document.getElementById('moodLevelText').textContent = labels[value-1];
+      return labels[val-1];
     }
-    function suggestCoping() {
-      const activeEmotion = document.querySelector('.emotion-btn.active')?.dataset.category || 
-                           document.querySelector('.emotion-btn.active')?.dataset.parent;
-      if (activeEmotion && copingStrategies[activeEmotion]) {
-        alert(`Vorschlag: ${copingStrategies[activeEmotion]}`);
+    function getEmotionColor(emotion) {
+      // Optional: Farben für verschiedene Gefühle
+      const map = {
+        'Freude': '#facc15', 'Glück': '#fde68a', 'Zuneigung': '#f472b6', 'Liebe': '#f472b6',
+        'Trauer': '#60a5fa', 'Verzweiflung': '#3b82f6',
+        'Ärger': '#f87171', 'Wut': '#ef4444',
+        'Angst': '#a78bfa', 'Panik': '#6366f1',
+        'Gleichgültigkeit': '#a3a3a3', 'Abneigung': '#64748b'
+      };
+      return map[emotion] || '#6366f1';
+    }
+    function updateAverageIntensity() {
+      const vals = Object.values(emotionIntensities);
+      const box = document.getElementById('average-intensity-box');
+      if (vals.length > 0) {
+        const avg = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2);
+        box.style.display = '';
+        box.innerHTML = `<strong>⌀ Intensität aller Gefühle:</strong> <span style="font-size:1.2em;color:#6366f1;font-weight:600;">${avg}</span> / 5`;
+      } else {
+        box.style.display = 'none';
       }
     }
+
+    // Krisenhilfe anzeigen
+    function showHelp() {
+      document.getElementById('help-modal').style.display = 'block';
+      document.getElementById('help-modal').focus();
+    }
+    function hideHelp() {
+      document.getElementById('help-modal').style.display = 'none';
+    }
+    function hideCrisis() {
+      document.getElementById('crisis-banner').style.display = 'none';
+    }
+
+    // Speicherfunktionen
+    function saveDaily() {
+      const entry = {
+        date: new Date().toISOString(),
+        feeling: document.getElementById('daily-feeling').value,
+        thoughts: document.getElementById('daily-thoughts').value,
+        goal: document.getElementById('daily-goal').value
+      };
+      
+      data.daily.push(entry);
+      saveData();
+      
+      // Felder leeren
+      document.getElementById('daily-thoughts').value = '';
+      document.getElementById('daily-goal').value = '';
+    }
+
     function saveMood() {
+      const emotions = Object.keys(emotionIntensities);
+      const intensities = Object.entries(emotionIntensities).map(([emotion, intensity]) => ({emotion, intensity}));
+      const avgIntensity = intensities.length > 0 ? (intensities.reduce((a,b)=>a+parseInt(b.intensity),0)/intensities.length).toFixed(2) : null;
       const dataEntry = {
         date: new Date().toISOString(),
-        emotions: Array.from(document.querySelectorAll('.emotion-btn.active')).map(btn => btn.textContent.trim()),
-        intensity: document.getElementById('moodLevel').value,
+        emotions: intensities,
+        averageIntensity: avgIntensity,
         bodyReactions: Array.from(document.querySelectorAll('[name="bodyReactions"]:checked')).map(cb => cb.value),
         situation: document.getElementById('situation').value.trim(),
         thoughts: document.getElementById('thoughtsMood').value.trim(),
@@ -572,8 +780,9 @@
       saveData();
       // Reset
       document.querySelectorAll('.emotion-btn.active').forEach(btn => btn.classList.remove('active'));
-      document.getElementById('moodLevel').value = 3;
-      updateMoodLevel(3);
+      emotionIntensities = {};
+      renderEmotionIntensities();
+      updateAverageIntensity();
       document.querySelectorAll('[name="bodyReactions"]').forEach(cb => cb.checked = false);
       document.getElementById('situation').value = '';
       document.getElementById('thoughtsMood').value = '';
@@ -780,6 +989,10 @@
         content = JSON.stringify(anonymizeData(data), null, 2);
         filename = `therapie_daten_anonym_${now.toISOString().split('T')[0]}.json`;
         mimeType = 'application/json';
+      } else if (format === 'markdown') {
+        content = generateMarkdownReport();
+        filename = `therapie_arbeitsbuch_${now.toISOString().split('T')[0]}.md`;
+        mimeType = 'text/markdown';
       } else {
         // JSON für therapeutische Auswertung
         const exportData = {
@@ -1063,28 +1276,48 @@ Beginne deine Antwort mit einer kurzen, ermutigenden Einschätzung.`;
     // Chart.js Mood-Chart anzeigen
     function renderMoodChart() {
       const ctx = document.getElementById('moodChart').getContext('2d');
+      // Für jede gespeicherte Stimmung: Datum, Durchschnitt, Top-Emotion
       const moodData = data.moods.map(entry => ({
         x: new Date(entry.date),
-        y: parseInt(entry.intensity)
+        y: parseFloat(entry.averageIntensity || 0),
+        label: entry.emotions && entry.emotions.length > 0 ? entry.emotions[0].emotion : ''
       }));
       if(window.moodChartInstance) window.moodChartInstance.destroy();
       window.moodChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
+          labels: moodData.map(d=>d.x),
           datasets: [{
-            label: 'Stimmungsverlauf',
-            data: moodData,
-            borderColor: '#2563eb',
-            backgroundColor: 'rgba(37,99,235,0.1)',
-            tension: 0.2
+            label: '⌀ Intensität',
+            data: moodData.map(d=>({x:d.x, y:d.y})),
+            borderColor: '#6366f1',
+            backgroundColor: 'rgba(99,102,241,0.08)',
+            tension: 0.2,
+            pointRadius: 5,
+            pointBackgroundColor: moodData.map(d=>getEmotionColor(d.label)),
+            pointHoverRadius: 7
           }]
         },
         options: {
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const idx = context.dataIndex;
+                  const entry = data.moods[idx];
+                  if(entry && entry.emotions) {
+                    return entry.emotions.map(e=>`${e.emotion}: ${getIntensityLabel(e.intensity)}`).join(', ');
+                  }
+                  return context.formattedValue;
+                }
+              }
+            },
+            legend: { display: false }
+          },
           scales: {
             x: { type: 'time', time: { unit: 'day' }, title: { display: true, text: 'Datum' } },
-            y: { min: 1, max: 5, title: { display: true, text: 'Intensität' } }
-          },
-          plugins: { legend: { display: false } }
+            y: { min: 1, max: 5, title: { display: true, text: '⌀ Intensität' } }
+          }
         }
       });
     }
@@ -1121,6 +1354,122 @@ Beginne deine Antwort mit einer kurzen, ermutigenden Einschätzung.`;
     document.addEventListener('DOMContentLoaded', function() {
       // ...existing code...
       renderMoodChart();
+      renderClusterTriggerTable();
+    });
+    // Trigger-Diary Array
+    if (!data.triggers) data.triggers = [];
+
+    function copyToThoughts() {
+      const thought = document.getElementById('thoughtsMood').value.trim();
+      if (thought) {
+        const taggedThought = `[Quelle: Mood-Modul] ${thought}`;
+        document.getElementById('current-thoughts').value = taggedThought;
+        saveThoughts();
+        alert('✅ Gedanke in Gedanken-Sammler übernommen!');
+      }
+    }
+
+    function copyToTriggerDiary() {
+      const situation = document.getElementById('situation').value.trim();
+      const thought = document.getElementById('thoughtsMood').value.trim();
+      const bodyReactions = Array.from(document.querySelectorAll('[name="bodyReactions"]:checked')).map(cb => cb.value);
+      const coping = document.getElementById('copingStrategy').value;
+
+      if (situation) {
+        const triggerEntry = {
+          date: new Date().toISOString(),
+          trigger: situation,
+          thought: thought || '-',
+          body: bodyReactions.join(', ') || '-',
+          reaction: coping || '-',
+          helpful: 'Noch nicht bewertet'
+        };
+        const triggerDiary = JSON.parse(localStorage.getItem('triggerDiary')) || [];
+        triggerDiary.push(triggerEntry);
+        localStorage.setItem('triggerDiary', JSON.stringify(triggerDiary));
+        alert('✅ Trigger wurde ins Trigger-Tagebuch übernommen!');
+        renderClusterTriggerTable();
+      }
+    }
+
+    function renderClusterTriggerTable() {
+      const tbody = document.getElementById('clusterTriggerTableBody');
+      tbody.innerHTML = '';
+
+      const triggerDiary = JSON.parse(localStorage.getItem('triggerDiary')) || [];
+      triggerDiary.forEach(entry => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${new Date(entry.date).toLocaleDateString()}</td>
+          <td>${entry.trigger}</td>
+          <td>${entry.thought}</td>
+          <td>${entry.body}</td>
+          <td>${entry.reaction}</td>
+          <td>${entry.helpful}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      renderClusterTriggerTable();
+    });
+    // Trigger-Diary Array
+    if (!data.triggers) data.triggers = [];
+
+    function copyToThoughts() {
+      const thought = document.getElementById('thoughtsMood').value.trim();
+      if (thought) {
+        const taggedThought = `[Quelle: Mood-Modul] ${thought}`;
+        document.getElementById('current-thoughts').value = taggedThought;
+        saveThoughts();
+        alert('✅ Gedanke in Gedanken-Sammler übernommen!');
+      }
+    }
+
+    function copyToTriggerDiary() {
+      const situation = document.getElementById('situation').value.trim();
+      const thought = document.getElementById('thoughtsMood').value.trim();
+      const bodyReactions = Array.from(document.querySelectorAll('[name="bodyReactions"]:checked')).map(cb => cb.value);
+      const coping = document.getElementById('copingStrategy').value;
+
+      if (situation) {
+        const triggerEntry = {
+          date: new Date().toISOString(),
+          trigger: situation,
+          thought: thought || '-',
+          body: bodyReactions.join(', ') || '-',
+          reaction: coping || '-',
+          helpful: 'Noch nicht bewertet'
+        };
+        const triggerDiary = JSON.parse(localStorage.getItem('triggerDiary')) || [];
+        triggerDiary.push(triggerEntry);
+        localStorage.setItem('triggerDiary', JSON.stringify(triggerDiary));
+        alert('✅ Trigger wurde ins Trigger-Tagebuch übernommen!');
+        renderClusterTriggerTable();
+      }
+    }
+
+    function renderClusterTriggerTable() {
+      const tbody = document.getElementById('clusterTriggerTableBody');
+      tbody.innerHTML = '';
+
+      const triggerDiary = JSON.parse(localStorage.getItem('triggerDiary')) || [];
+      triggerDiary.forEach(entry => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${new Date(entry.date).toLocaleDateString()}</td>
+          <td>${entry.trigger}</td>
+          <td>${entry.thought}</td>
+          <td>${entry.body}</td>
+          <td>${entry.reaction}</td>
+          <td>${entry.helpful}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
       renderClusterTriggerTable();
     });
   </script>
