@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧠 Therapie-Arbeitsbuch</title>
+  <link rel="stylesheet" href="therapeutic_workbook.css">
+  <script src="chart.min.js"></script>
+  <script src="jspdf.umd.min.js"></script>
+  <script src="html2canvas.min.js"></script>
+</head>
+<body>
+  <!-- Crisis Banner -->
+  <div id="crisis-banner" class="crisis-banner" aria-live="assertive" tabindex="0">
+    🆘 <strong>Brauchst du sofort Hilfe?</strong> 
+    <button class="btn btn-danger" onclick="showHelp()" aria-label="Hilfe finden">Hilfe finden</button>
+    <button class="btn btn-secondary" onclick="hideCrisis()" aria-label="Banner schließen">OK</button>
+  </div>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>🧠 Mein Therapie-Arbeitsbuch</h1>
+      <p>Ein sicherer Ort für deine Gedanken und Gefühle</p>
+      <div>
+        <span>Heute ausgefüllt: <span id="progress-text">0%</span></span>
+        <div class="progress-bar" aria-label="Fortschritt heute">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav-tabs" role="tablist">
+      <button class="nav-tab active" onclick="showTab('krise', event)" role="tab" aria-selected="true" aria-controls="krise" tabindex="0">🆘 Krise</button>
+      <button class="nav-tab" onclick="showTab('staerken', event)" role="tab" aria-selected="false" aria-controls="staerken" tabindex="-1">💪 Stärken</button>
+      <button class="nav-tab" onclick="showTab('grounding', event)" role="tab" aria-selected="false" aria-controls="grounding" tabindex="-1">🧘 Grounding</button>
+      <button class="nav-tab" onclick="showTab('mood', event)" role="tab" aria-selected="false" aria-controls="mood" tabindex="-1">😊 Stimmung</button>
+      <button class="nav-tab" onclick="showTab('gedanken', event)" role="tab" aria-selected="false" aria-controls="gedanken" tabindex="-1">💭 Gedanken</button>
+      <button class="nav-tab" onclick="showTab('positives', event)" role="tab" aria-selected="false" aria-controls="positives" tabindex="-1">🙏 Positives</button>
+      <button class="nav-tab" onclick="showTab('notiz', event)" role="tab" aria-selected="false" aria-controls="notiz" tabindex="-1">📝 Notiz</button>
+      <button class="nav-tab" onclick="showTab('hausaufgabe', event)" role="tab" aria-selected="false" aria-controls="hausaufgabe" tabindex="-1">📚 Hausaufgabe</button>
+      <button class="nav-tab" onclick="showTab('export', event)" role="tab" aria-selected="false" aria-controls="export" tabindex="-1">📤 Export</button>
+      <button class="nav-tab" onclick="showTab('kommunikation', event)" role="tab" aria-selected="false" aria-controls="kommunikation" tabindex="-1">🗣️ Kommunikation</button>
+      <button class="nav-tab" onclick="showTab('clustertrigger', event)" role="tab" aria-selected="false" aria-controls="clustertrigger" tabindex="-1">🧩 Cluster-Trigger</button>
+    </nav>
+
+    <!-- SECTION: Krise -->
+    <section id="krise" class="content-section active" role="tabpanel" aria-hidden="false">
+      <h2>🆘 Krisenhilfe</h2>
+      <div class="tip">Wenn es dir sehr schlecht geht, nutze die Sofort-Hilfe oder Grounding-Übungen.</div>
+      <button class="btn btn-danger" onclick="showHelp()">Sofort-Hilfe anzeigen</button>
+      <button class="btn btn-secondary" onclick="showTab('grounding', event)">Zu Grounding</button>
+    </section>
+
+    <!-- SECTION: Stärken-Check -->
+    <section id="staerken" class="content-section" role="tabpanel" aria-hidden="true">
+      <h2>💪 Stärken-Check</h2>
+      <div class="form-group">
+        <label for="strengthProud">Worauf bist du heute stolz?</label>
+        <input type="text" id="strengthProud" placeholder="Etwas, das du gut gemacht hast">
+      </div>
+      <div class="form-group">
+        <label for="strengthGood">Was ist dir heute gut gelungen?</label>
+        <input type="text" id="strengthGood" placeholder="Eine kleine Stärke oder Fähigkeit">
+      </div>
+      <div class="crosslink">
+        <button class="btn btn-secondary" onclick="copyValue('strengthProud','journal')">Als Journal-Eintrag übernehmen</button>
+        <button class="btn btn-secondary" onclick="copyValue('strengthGood','homework')">Als Hausaufgabe übernehmen</button>
+      </div>
+      <button class="btn btn-success" onclick="saveStrength()">Speichern</button>
+    </section>
+
+    <!-- SECTION: Grounding & Skills -->
+    <section id="grounding" class="content-section" role="tabpanel" aria-hidden="true">
+      <h2>🧘 Grounding & Skills</h2>
+      <div class="tip">Nutze diese Übungen, um dich zu beruhigen und im Hier & Jetzt zu bleiben.</div>
+      <button class="btn btn-primary" onclick="startBreathing()">Atemübung starten</button>
+      <button class="btn btn-secondary" onclick="checkGrounding()">Bist du geerdet?</button>
+    </section>
+
+    <!-- SECTION: Stimmung (Gefühlsstern) -->
+    <section id="mood" class="content-section" role="tabpanel" aria-hidden="true">
+      <h2>😊 Wie fühlst du dich?</h2>
+      <label>Stimmungslage (schnell):</label>
+      <select id="moodType" onchange="updateMoodDropdown()">
+        <option value="">-- Wähle --</option>
+        <option value="happy">😊 Freude</option>
+        <option value="anxious">😨 Angst</option>
+        <option value="angry">😠 Wut</option>
+        <option value="sad">😢 Trauer</option>
+        <option value="calm">😐 Gleichgültigkeit</option>
+      </select>
+      <!-- 1. GEFÜHLSSTERN-AUSWAHL -->
+      <div class="emotion-grid">
+        <button class="emotion-btn" data-category="FREUDE" onclick="toggleEmotion(this)">😊 Freude</button>
+        <button class="emotion-btn" data-category="ZUNEIGUNG" onclick="toggleEmotion(this)">💖 Zuneigung</button>
+        <button class="emotion-btn" data-category="TRAUER" onclick="toggleEmotion(this)">😢 Trauer</button>
+        <button class="emotion-btn" data-category="ÄRGER" onclick="toggleEmotion(this)">😠 Ärger</button>
+        <button class="emotion-btn" data-category="ANGST" onclick="toggleEmotion(this)">😨 Angst</button>
+        <button class="emotion-btn" data-category="GLEICHGÜLTIGKEIT" onclick="toggleEmotion(this)">😐 Gleichgültigkeit</button>
+        <button class="emotion-btn sub" data-parent="FREUDE" onclick="toggleEmotion(this)">Glück</button>
+        <button class="emotion-btn sub" data-parent="TRAUER" onclick="toggleEmotion(this)">Verzweiflung</button>
+        <button class="emotion-btn sub" data-parent="ÄRGER" onclick="toggleEmotion(this)">Wut</button>
+        <button class="emotion-btn sub" data-parent="ANGST" onclick="toggleEmotion(this)">Panik</button>
+        <button class="emotion-btn sub" data-parent="ZUNEIGUNG" onclick="toggleEmotion(this)">Liebe</button>
+        <button class="emotion-btn sub" data-parent="GLEICHGÜLTIGKEIT" onclick="toggleEmotion(this)">Abneigung</button>
+      </div>
+      <!-- 2. INTENSITÄT -->
+      <label>Intensität: <span id="moodLevelText">Mittel</span></label>
+      <input type="range" id="moodLevel" min="1" max="5" value="3" oninput="updateMoodLevel(this.value)" list="moodMarkers">
+      <datalist id="moodMarkers">
+        <option value="1" label="Gering"></option>
+        <option value="2" label="Leicht"></option>
+        <option value="3" label="Mittel"></option>
+        <option value="4" label="Stark"></option>
+        <option value="5" label="Extrem"></option>
+      </datalist>
+      <canvas id="moodChart" width="300" height="100"></canvas>
+      <!-- 3. KÖRPERREAKTIONEN -->
+      <label>Körperreaktionen (Mehrfachauswahl):</label>
+      <div class="checkbox-grid">
+        <label><input type="checkbox" name="bodyReactions" value="Herzrasen"> Herzrasen</label>
+        <label><input type="checkbox" name="bodyReactions" value="Schwitzen"> Schwitzen</label>
+        <label><input type="checkbox" name="bodyReactions" value="Zittern"> Zittern</label>
+        <label><input type="checkbox" name="bodyReactions" value="Atembeschwerden"> Atembeschwerden</label>
+        <label><input type="checkbox" name="bodyReactions" value="Muskelspannung"> Muskelspannung</label>
+        <label><input type="checkbox" name="bodyReactions" value="Übelkeit"> Übelkeit</label>
+      </div>
+      <!-- 4. AUSLÖSER (ABC-Modell) -->
+      <label>Ausgangssituation (A):</label>
+      <textarea id="situation" placeholder="Was ist objektiv passiert?"></textarea>
+      <!-- 5. BEWERTUNG (ABC-Modell) -->
+      <label>Persönliche Bewertung (B):</label>
+      <textarea id="thoughtsMood" placeholder="Was bedeutet das für mich?"></textarea>
+      <!-- 6. COPING -->
+      <div class="coping-box">
+        <label>Umgang damit:</label>
+        <select id="copingStrategy">
+          <option value="">-- Wähle --</option>
+          <option value="grounding">Grounding-Technik</option>
+          <option value="reframe">Gedanken umformulieren</option>
+          <option value="accept">Akzeptanz</option>
+        </select>
+        <button onclick="suggestCoping()">Vorschlag</button>
+      </div>
+      <button class="btn btn-success" onclick="saveMood()">Speichern</button>
+    </section>
+
+    <!-- SECTION: Gedanken-Sammler (angepasst) -->
+    <section id="gedanken" class="content-section" role="tabpanel" aria-hidden="true">
+      <h2>💭 Gedanken-Sammler</h2>
+      <div class="tip">🧠 Manchmal hilft es, Gedanken einfach "rauszuschreiben" und loszulassen.</div>
+      <div class="form-group">
+        <label for="current-thoughts">Was geht dir durch den Kopf?</label>
+        <textarea id="current-thoughts" placeholder="Schreibe alles auf, was dich beschäftigt..." rows="6"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="thought-type">Art der Gedanken:</label>
+        <select id="thought-type">
+          <option value="">Wählen...</option>
+          <option value="worry">Sorgen/Grübeln</option>
+          <option value="memory">Erinnerungen</option>
+          <option value="future">Zukunft</option>
+          <option value="self-doubt">Selbstzweifel</option>
+          <option value="anger">Wut / Hass</option>
+          <option value="conflict">Zerissenheit</option>
+          <option value="positive">Positive Gedanken</option>
+          <option value="other">Andere</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="microGoal">Was wäre ein kleiner nächster Schritt?</label>
+        <input type="text" id="microGoal" placeholder="Mini-Schritt, um dich zu entlasten">
+      </div>
+      <div class="crosslink">
+        <button class="btn btn-secondary" onclick="copyValue('microGoal','homework')">Als Hausaufgabe übernehmen</button>
+      </div>
+      <button class="btn btn-success" onclick="saveThoughts()">💾 Gedanken speichern</button>
+      <button class="btn btn-secondary" onclick="clearThoughts()">🗑️ Loslassen</button>
+    </section>
+
+    <!-- SECTION: Positives & Ressourcen (angepasst) -->
+    <section id="positives" class="content-section" role="tabpanel" aria-hidden="true">
+      <h2>🙏 Positives & Ressourcen</h2>
+      <div class="form-group">
+        <label for="gratitude">Wofür bist du heute dankbar?</label>
+        <textarea id="gratitude" placeholder="Schreibe auf, wofür du heute dankbar bist..."></textarea>
+      </div>
+      <div class="form-group">
+        <label for="resources">Was gibt dir Kraft?</label>
+        <textarea id="resources" placeholder="Dinge, Menschen oder Orte, die dich stärken"></textarea>
+      </div>
+      <div class="crosslink">
+        <button class="btn btn-secondary" onclick="copyValue('gratitude','journal')">Als Journal-Eintrag übernehmen</button>
+      </div>
+      <button class="btn btn-success" onclick="savePositives()">Speichern</button>
+    </section>
+
+    <!-- Daily Check-in -->
+    <section id="daily" class="content-section active" role="tabpanel">
+      <h2>📅 Wie geht es dir heute?</h2>
+      <div class="tip">
+        💡 Nimm dir 2-3 Minuten Zeit. Es gibt keine richtigen oder falschen Antworten.
+      </div>
+
+      <div class="form-group">
+        <label for="daily-feeling">Wie fühlst du dich heute? (1-10)</label>
+        <div class="scale-container">
+          <span>😢</span>
+          <input type="range" id="daily-feeling" min="1" max="10" value="5" class="scale-input" 
+                 oninput="updateFeeling(this.value)" aria-describedby="feeling-help">
+          <span>😊</span>
+          <div class="scale-value" id="feeling-value">5</div>
+        </div>
+        <div id="feeling-help" class="sr-only">Bewerte dein Gefühl von 1 sehr schlecht bis 10 sehr gut</div>
+      </div>
+
+      <div class="form-group">
+        <label for="daily-thoughts">Was beschäftigt dich heute?</label>
+        <textarea id="daily-thoughts" placeholder="Lass deine Gedanken fließen..." 
+                  aria-describedby="thoughts-help"></textarea>
+        <div id="thoughts-help" class="sr-only">Schreibe einfach auf, was dir durch den Kopf geht</div>
+      </div>
+
+      <div class="form-group">
+        <label for="daily-goal">Ein kleines Ziel für heute:</label>
+        <input type="text" id="daily-goal" placeholder="z.B. 10 Min spazieren, jemanden anrufen...">
+      </div>
+
+      <button class="btn btn-success" onclick="saveDaily()">💾 Speichern</button>
+      <button class="btn btn-danger" onclick="triggerCrisis()">🆘 Mir geht es sehr schlecht</button>
+    </section>
+
+    <!-- Export -->
+    <section id="export" class="content-section" role="tabpanel">
+      <h2>📤 Deine Daten</h2>
+      
+      <div class="export-area">
+        <h3>🔒 Datenschutz garantiert</h3>
+        <p>Alle Daten bleiben auf deinem Gerät. Du entscheidest, was exportiert wird.</p>
+      </div>
+
+      <div class="stats-grid" id="stats-display">
+        <!-- Stats werden hier dynamisch eingefügt -->
+      </div>
+
+      <div class="form-group">
+        <label for="export-format">Export-Format:</label>
+        <select id="export-format">
+          <option value="json">JSON (für therapeutische GPTs)</option>
+          <option value="text">Lesbare Zusammenfassung</option>
+          <option value="anonymous">Anonymisierte Daten</option>
+        </select>
+      </div>
+
+      <div class="export-buttons">
+        <button class="btn btn-success" onclick="exportData()">📤 Daten exportieren</button>
+        <button class="btn btn-secondary" onclick="showStats()">📊 Statistiken anzeigen</button>
+        <button class="btn btn-danger" onclick="confirmDelete()">🗑️ Alle Daten löschen</button>
+      </div>
+    </section>
+
+    <!-- MODULE: Notiz an Therapeut -->
+    <section id="notiz" class="content-section" role="tabpanel">
+      <h2>Notiz an Therapeut</h2>
+      <label for="noteTherapist">Was möchte ich mit meinem Therapeuten besprechen?</label>
+      <textarea id="noteTherapist" placeholder="Themen, die du in der Sitzung ansprechen willst"></textarea>
+      <div class="crosslink">
+        <button class="btn btn-secondary" onclick="copyValue('noteTherapist','homework')">Als Hausaufgabe übernehmen</button>
+      </div>
+      <button class="btn btn-success" onclick="saveNote()">Speichern</button>
+    </section>
+
+    <!-- MODULE: Hausaufgabe -->
+    <section id="hausaufgabe" class="content-section" role="tabpanel">
+      <h2>Hausaufgabe</h2>
+      <label for="homework">Was nehme ich mir konkret vor?</label>
+      <textarea id="homework" placeholder="Mini-Schritte oder Aufgaben für die Woche"></textarea>
+      <button class="btn btn-success" onclick="saveHomework()">Speichern</button>
+    </section>
+
+    <!-- SECTION: Journal -->
+    <section id="journal" class="content-section" role="tabpanel" aria-hidden="true">
+      <h2>📓 Journal</h2>
+      <label for="journalEntry">Freier Eintrag:</label>
+      <textarea id="journalEntry" placeholder="Schreibe hier alles, was du festhalten möchtest..."></textarea>
+      <button class="btn btn-success" onclick="saveJournal()">Speichern</button>
+    </section>
+
+    <!-- SECTION: Kommunikation (Vier-Ohren-Modell) -->
+    <section id="kommunikation" class="content-section" role="tabpanel" aria-hidden="true">
+      <h2>🗣️ Kommunikation & Vier-Ohren-Modell</h2>
+      <div class="tip">Verbessere deine Kommunikation mit Übungen nach Schulz von Thun – angepasst für neurodiverse Teams.</div>
+      <div class="four-ears-grid">
+        <div class="four-ear-card">
+          <h3>Sachebene</h3>
+          <p>Was sind die Fakten? <br><em>Stell dir vor: Du bist ein Wissenschaftler, der nur beobachtet.</em></p>
+          <label>Fakten notieren:</label>
+          <textarea placeholder="Was ist wirklich passiert?"></textarea>
+          <div class="neuro-tip">PTBS: Atme tief. Autismus: Checkliste nutzen.</div>
+        </div>
+        <div class="four-ear-card">
+          <h3>Beziehungsebene</h3>
+          <p>Wie ist unsere Verbindung? <br><em>Stell dir vor: Das Band zwischen euch wird gestärkt.</em></p>
+          <label>Gefühl benennen:</label>
+          <textarea placeholder="Wie fühle ich mich dabei?"></textarea>
+          <div class="neuro-tip">Borderline: Ruhig teilen. Autismus: Klare Worte.</div>
+        </div>
+        <div class="four-ear-card">
+          <h3>Selbstoffenlegung</h3>
+          <p>Was sagt es über mich? <br><em>Stell dir vor: Du öffnest ein Fenster zu deinen Gefühlen.</em></p>
+          <label>Was verrät es über mich?</label>
+          <textarea placeholder="Was sagt das über mich?"></textarea>
+          <div class="neuro-tip">PTBS: Trigger benennen. ADHS: Kurz halten.</div>
+        </div>
+        <div class="four-ear-card">
+          <h3>Appell</h3>
+          <p>Was will ich erreichen? <br><em>Stell dir vor: Dein Wunsch ist ein Wegweiser.</em></p>
+          <label>Appell formulieren:</label>
+          <textarea placeholder="Was wünsche ich mir konkret?"></textarea>
+          <div class="neuro-tip">Borderline: Team betonen. Autismus: Konkrete Anweisungen.</div>
+        </div>
+      </div>
+      <div class="download-box">
+        <h4>Arbeitsblätter & Karteikarten</h4>
+        <a href="Therapieplan-Uebersicht.markdown" download>Therapieplan-Übersicht (Markdown)</a><br>
+        <a href="Gefuehls-Trigger-Tagebuch.markdown" download>Gefühls- und Trigger-Tagebuch (Markdown)</a><br>
+        <a href="VierOhrenKarteikarten.tex" download>Vier-Ohren-Karteikarten (LaTeX)</a>
+        <div class="latex-hint">
+          <strong>LaTeX-Anleitung:</strong> Speichere die Datei und kompiliere sie mit <code>pdflatex VierOhrenKarteikarten.tex</code>.<br>
+          Das Ergebnis ist ein PDF mit vier Karteikarten (A6-Format empfohlen).
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: Cluster-Trigger-Analyse -->
+    <section id="clustertrigger" class="content-section cluster-trigger-section" role="tabpanel" aria-hidden="true">
+      <h2>🧩 Cluster-Trigger-Analyse</h2>
+      <div class="trigger-info">
+        Analysiere deine häufigsten Trigger und erkenne Muster. Die Tabelle zeigt, welche Auslöser, Gefühle und Reaktionen sich wiederholen. Nutze die Erkenntnisse für gezielte Strategien!
+      </div>
+      <table class="trigger-table">
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th>Trigger</th>
+            <th>Gefühl</th>
+            <th>Körper</th>
+            <th>Reaktion</th>
+            <th>Hilfreiches</th>
+          </tr>
+        </thead>
+        <tbody id="clusterTriggerTableBody">
+          <!-- Dynamisch per JS -->
+        </tbody>
+      </table>
+      <div class="trigger-warning" id="clusterTriggerWarning" class="hidden"></div>
+    </section>
+  </div>
+
+  <!-- Help Modal -->
+  <div id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title" tabindex="-1">
+    <div class="help-modal-content">
+      <h2 id="help-modal-title">🆘 Sofort-Hilfe</h2>
+      <div class="help-modal-section">
+        <h3>🇩🇪 Deutschland:</h3>
+        <p><strong>Telefonseelsorge:</strong><br>0800 111 0 111 oder 0800 111 0 222<br>(24/7 kostenlos)</p>
+        <p><strong>Krisenchat:</strong><br><a href="https://krisenchat.de" target="_blank" rel="noopener">krisenchat.de</a></p>
+        <p><strong>Notruf:</strong> 112</p>
+      </div>
+      <div class="help-modal-tip">
+        💙 <strong>Du bist nicht allein.</strong> Deine Gefühle sind vorübergehend, auch wenn sie sich jetzt überwältigend anfühlen.
+      </div>
+      <button class="btn btn-secondary" onclick="hideHelp()">Schließen</button>
+    </div>
+  </div>
+
+  <div class="offline-hint">
+    <strong>Hinweis:</strong> Diese App funktioniert komplett offline. Alle Daten und Tools bleiben auf deinem Gerät.
+  </div>
+
+  <script>
+    // Utility-Funktion für Wertzugriff
+    function val(id) {
+      const el = document.getElementById(id);
+      return el ? el.value : '';
+    }
+
+    // Daten-Objekt
+    let data = {
+      daily: [],
+      moods: [],
+      thoughts: [],
+      gratitude: [],
+      goals: [],
+      strengths: [],
+      positives: [],
+      selectedMoods: new Set()
+    };
+
+    // Daten laden
+    function loadData() {
+      const saved = localStorage.getItem('therapyWorkbook');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          data = { ...data, ...parsed };
+          data.selectedMoods = new Set(data.selectedMoods || []);
+        } catch (e) {
+          console.log('Konnte Daten nicht laden');
+        }
+      }
+      updateProgress();
+    }
+
+    // Daten speichern
+    function saveData() {
+      const toSave = {
+        ...data,
+        selectedMoods: Array.from(data.selectedMoods)
+      };
+      localStorage.setItem('therapyWorkbook', JSON.stringify(toSave));
+      updateProgress();
+      showSuccess();
+    }
+
+    // Navigation
+    function showTab(tabName, evt) {
+      // Alle Sections verstecken
+      document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+        section.setAttribute('aria-hidden', 'true');
+      });
+      // Alle Tabs deaktivieren
+      document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+        tab.setAttribute('aria-selected', 'false');
+        tab.setAttribute('tabindex', '-1');
+      });
+      // Gewählte Section zeigen
+      const section = document.getElementById(tabName);
+      section.classList.add('active');
+      section.setAttribute('aria-hidden', 'false');
+      // Tab aktivieren
+      if (evt && evt.target) {
+        evt.target.classList.add('active');
+        evt.target.setAttribute('aria-selected', 'true');
+        evt.target.setAttribute('tabindex', '0');
+        evt.target.focus();
+      }
+    }
+
+    // Erfolgsfeedback
+    function showSuccess() {
+      const activeSection = document.querySelector('.content-section.active');
+      if (activeSection) {
+        activeSection.classList.add('success-flash');
+        setTimeout(() => {
+          activeSection.classList.remove('success-flash');
+        }, 500);
+      }
+    }
+
+    // Slider Updates
+    function updateFeeling(value) {
+      document.getElementById('feeling-value').textContent = value;
+      if (value <= 3) {
+        document.getElementById('crisis-banner').style.display = 'block';
+      } else {
+        document.getElementById('crisis-banner').style.display = 'none';
+      }
+    }
+
+    function updateIntensity(value) {
+      document.getElementById('intensity-value').textContent = value;
+    }
+
+    function updateHelpful(value) {
+      document.getElementById('helpful-value').textContent = value;
+    }
+
+    function updateMotivation(value) {
+      document.getElementById('motivation-value').textContent = value;
+    }
+
+    // Krisenintervention
+    function triggerCrisis() {
+      document.getElementById('crisis-banner').style.display = 'block';
+      document.getElementById('crisis-banner').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function showHelp() {
+      document.getElementById('help-modal').style.display = 'block';
+      document.getElementById('help-modal').focus();
+    }
+    function hideHelp() {
+      document.getElementById('help-modal').style.display = 'none';
+    }
+    function hideCrisis() {
+      document.getElementById('crisis-banner').style.display = 'none';
+    }
+
+    // Speicherfunktionen
+    function saveDaily() {
+      const entry = {
+        date: new Date().toISOString(),
+        feeling: document.getElementById('daily-feeling').value,
+        thoughts: document.getElementById('daily-thoughts').value,
+        goal: document.getElementById('daily-goal').value
+      };
+      
+      data.daily.push(entry);
+      saveData();
+      
+      // Felder leeren
+      document.getElementById('daily-thoughts').value = '';
+      document.getElementById('daily-goal').value = '';
+    }
+
+    function toggleMood(mood) {
+      const btn = event.target;
+      
+      if (data.selectedMoods.has(mood)) {
+        data.selectedMoods.delete(mood);
+        btn.classList.remove('selected');
+      } else {
+        data.selectedMoods.add(mood);
+        btn.classList.add('selected');
+      }
+    }
+
+    // Gefühlsstern-Logik für Stimmung
+    const copingStrategies = {
+      "FREUDE": "Genießen und bewusst wahrnehmen",
+      "ANGST": "4-7-8 Atmung + Realitätscheck",
+      "ÄRGER": "Time-out + kognitive Umstrukturierung",
+      "TRAUER": "Akzeptanz + Selbstfürsorge"
+    };
+    function toggleEmotion(btn) {
+      btn.classList.toggle('active');
+      // Deaktiviere gegensätzliche Emotionen
+      const opposites = { "FREUDE": "TRAUER", "TRAUER": "FREUDE", "ANGST": "ZUNEIGUNG" };
+      const category = btn.dataset.category || btn.dataset.parent;
+      if (opposites[category]) {
+        document.querySelectorAll(`[data-category="${opposites[category]}"] , [data-parent="${opposites[category]}"]`).forEach(el => el.classList.remove('active'));
+      }
+    }
+    function updateMoodLevel(value) {
+      const labels = ["Gering", "Leicht", "Mittel", "Stark", "Extrem"];
+      document.getElementById('moodLevelText').textContent = labels[value-1];
+    }
+    function suggestCoping() {
+      const activeEmotion = document.querySelector('.emotion-btn.active')?.dataset.category || 
+                           document.querySelector('.emotion-btn.active')?.dataset.parent;
+      if (activeEmotion && copingStrategies[activeEmotion]) {
+        alert(`Vorschlag: ${copingStrategies[activeEmotion]}`);
+      }
+    }
+    function saveMood() {
+      const dataEntry = {
+        date: new Date().toISOString(),
+        emotions: Array.from(document.querySelectorAll('.emotion-btn.active')).map(btn => btn.textContent.trim()),
+        intensity: document.getElementById('moodLevel').value,
+        bodyReactions: Array.from(document.querySelectorAll('[name="bodyReactions"]:checked')).map(cb => cb.value),
+        situation: document.getElementById('situation').value.trim(),
+        thoughts: document.getElementById('thoughtsMood').value.trim(),
+        coping: document.getElementById('copingStrategy').value
+      };
+      if (!data.moods) data.moods = [];
+      data.moods.push(dataEntry);
+      saveData();
+      // Reset
+      document.querySelectorAll('.emotion-btn.active').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('moodLevel').value = 3;
+      updateMoodLevel(3);
+      document.querySelectorAll('[name="bodyReactions"]').forEach(cb => cb.checked = false);
+      document.getElementById('situation').value = '';
+      document.getElementById('thoughtsMood').value = '';
+      document.getElementById('copingStrategy').value = '';
+    }
+
+    function saveThoughts() {
+      const entry = {
+        date: new Date().toISOString(),
+        content: document.getElementById('current-thoughts').value,
+        type: document.getElementById('thought-type').value,
+        helpful: document.getElementById('thought-helpful').value
+      };
+      
+      data.thoughts.push(entry);
+      saveData();
+      
+      // Reset
+      document.getElementById('current-thoughts').value = '';
+      document.getElementById('thought-type').value = '';
+    }
+
+    function clearThoughts() {
+      if (confirm('Gedanken loslassen? Das kann befreiend sein.')) {
+        document.getElementById('current-thoughts').value = '';
+        showSuccess();
+      }
+    }
+
+    function saveGratitude() {
+      const entry = {
+        date: new Date().toISOString(),
+        grateful: [
+          document.getElementById('grateful-1').value,
+          document.getElementById('grateful-2').value,
+          document.getElementById('grateful-3').value
+        ].filter(g => g.trim()),
+        moment: document.getElementById('positive-moment').value,
+        person: document.getElementById('important-person').value
+      };
+      
+      data.gratitude.push(entry);
+      saveData();
+      
+      // Reset
+      document.getElementById('grateful-1').value = '';
+      document.getElementById('grateful-2').value = '';
+      document.getElementById('grateful-3').value = '';
+      document.getElementById('positive-moment').value = '';
+      document.getElementById('important-person').value = '';
+    }
+
+    function saveGoals() {
+      const entry = {
+        date: new Date().toISOString(),
+        todayGoal: document.getElementById('today-goal').value,
+        weekGoal: document.getElementById('week-goal').value,
+        dream: document.getElementById('dream').value,
+        motivation: document.getElementById('motivation').value
+      };
+      
+      data.goals.push(entry);
+      saveData();
+      
+      // Reset
+      document.getElementById('today-goal').value = '';
+      document.getElementById('week-goal').value = '';
+      document.getElementById('dream').value = '';
+    }
+
+    // Speicherfunktionen für neue/angepasste Module
+    function saveStrength() {
+      const entry = {
+        date: new Date().toISOString(),
+        proud: val('strengthProud'),
+        good: val('strengthGood')
+      };
+      if (!data.strengths) data.strengths = [];
+      data.strengths.push(entry);
+      saveData();
+      document.getElementById('strengthProud').value = '';
+      document.getElementById('strengthGood').value = '';
+    }
+    function savePositives() {
+      const entry = {
+        date: new Date().toISOString(),
+        gratitude: val('gratitude'),
+        resources: val('resources')
+      };
+      if (!data.positives) data.positives = [];
+      data.positives.push(entry);
+      saveData();
+      document.getElementById('gratitude').value = '';
+      document.getElementById('resources').value = '';
+    }
+
+    // Notiz an Therapeut speichern
+    function saveNote() {
+      localStorage.setItem('noteTherapist', val('noteTherapist'));
+      showSuccess();
+      alert('Notiz gespeichert!');
+    }
+
+    // Hausaufgabe speichern
+    function saveHomework() {
+      localStorage.setItem('homework', val('homework'));
+      showSuccess();
+      alert('Hausaufgabe gespeichert!');
+    }
+    function copyValue(fromId, toId) {
+      const value = document.getElementById(fromId).value.trim();
+      if (value) {
+        document.getElementById(toId).value = value;
+        showSuccess();
+        alert('Als Hausaufgabe übernommen!');
+      }
+    }
+
+    // Fortschritt berechnen
+    function updateProgress() {
+      const today = new Date().toDateString();
+      const todayData = {
+        daily: data.daily.filter(item => new Date(item.date).toDateString() === today),
+        moods: data.moods.filter(item => new Date(item.date).toDateString() === today),
+        thoughts: data.thoughts.filter(item => new Date(item.date).toDateString() === today),
+        gratitude: data.gratitude.filter(item => new Date(item.date).toDateString() === today),
+        goals: data.goals.filter(item => new Date(item.date).toDateString() === today)
+      };
+      
+      const completed = Object.values(todayData).filter(arr => arr.length > 0).length;
+      const progress = Math.min((completed / 5) * 100, 100);
+      
+      document.getElementById('progress-text').textContent = Math.round(progress) + '%';
+      document.getElementById('progress-fill').style.width = progress + '%';
+    }
+
+    // Statistiken anzeigen
+    function showStats() {
+      const stats = {
+        totalEntries: (data.daily?.length || 0) + (data.moods?.length || 0) + (data.thoughts?.length || 0) + (data.gratitude?.length || 0) + (data.goals?.length || 0) + (data.strengths?.length || 0) + (data.positives?.length || 0) + (data.journal?.length || 0),
+        dailyEntries: data.daily?.length || 0,
+        moodEntries: data.moods?.length || 0,
+        thoughtEntries: data.thoughts?.length || 0,
+        gratitudeEntries: data.gratitude?.length || 0,
+        goalEntries: data.goals?.length || 0,
+        strengthEntries: data.strengths?.length || 0,
+        positiveEntries: data.positives?.length || 0,
+        journalEntries: data.journal?.length || 0
+      };
+
+      const today = new Date().toDateString();
+      const todayEntries = [
+        ...data.daily,
+        ...data.moods,
+        ...data.thoughts,
+        ...data.gratitude,
+        ...data.goals
+      ].filter(item => new Date(item.date).toDateString() === today).length;
+
+      const avgMood = data.daily.length > 0 
+        ? (data.daily.reduce((sum, entry) => sum + parseInt(entry.feeling), 0) / data.daily.length)
+        : 0;
+
+      document.getElementById('stats-display').innerHTML = `
+        <div class="stat-box">
+          <div class="stat-number">${stats.totalEntries}</div>
+          <div class="stat-label">Gesamt-Einträge</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">${todayEntries}</div>
+          <div class="stat-label">Heute</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">${avgMood.toFixed(1)}</div>
+          <div class="stat-label">⌀ Stimmung</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">${stats.gratitudeEntries}</div>
+          <div class="stat-label">Dankbarkeit</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">${stats.goalEntries}</div>
+          <div class="stat-label">Ziele</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">${Math.max(0, 7 - new Date().getDay() + 1)}</div>
+          <div class="stat-label">Tage bis Woche</div>
+        </div>
+      `;
+    }
+
+    // Export-Funktionen
+    function exportData() {
+      const format = document.getElementById('export-format').value;
+      const now = new Date();
+      
+      let content, filename, mimeType;
+
+      if (format === 'text') {
+        content = generateTextReport();
+        filename = `therapie_arbeitsbuch_${now.toISOString().split('T')[0]}.txt`;
+        mimeType = 'text/plain';
+      } else if (format === 'anonymous') {
+        content = JSON.stringify(anonymizeData(data), null, 2);
+        filename = `therapie_daten_anonym_${now.toISOString().split('T')[0]}.json`;
+        mimeType = 'application/json';
+      } else {
+        // JSON für therapeutische Auswertung
+        const exportData = {
+          exportInfo: {
+            date: now.toISOString(),
+            version: "1.0",
+            format: "therapeutic_analysis"
+          },
+          summary: {
+            totalEntries: data.daily.length + data.moods.length + data.thoughts.length + data.gratitude.length + data.goals.length,
+            averageMood: data.daily.length > 0 ? (data.daily.reduce((sum, entry) => sum + parseInt(entry.feeling), 0) / data.daily.length) : 0,
+            timespan: {
+              from: data.daily.length > 0 ? data.daily[0].date : null,
+              to: now.toISOString()
+            }
+          },
+          data: data
+        };
+        content = JSON.stringify(exportData, null, 2);
+        filename = `therapie_arbeitsbuch_${now.toISOString().split('T')[0]}.json`;
+        mimeType = 'application/json';
+      }
+
+      downloadFile(content, filename, mimeType);
+    }
+
+    function generateTextReport() {
+      let report = `THERAPIE-ARBEITSBUCH ZUSAMMENFASSUNG\n`;
+      report += `=====================================\n\n`;
+      report += `Export-Datum: ${new Date().toLocaleDateString('de-DE')}\n`;
+      report += `Gesamt-Einträge: ${(data.daily?.length||0)+(data.moods?.length||0)+(data.thoughts?.length||0)+(data.gratitude?.length||0)+(data.goals?.length||0)+(data.strengths?.length||0)+(data.positives?.length||0)}\n\n`;
+      if (data.strengths?.length > 0) {
+        report += `STÄRKEN (${data.strengths.length} Einträge)\n`;
+        report += `-------------------------------\n`;
+        data.strengths.slice(-5).forEach(entry => {
+          report += `${new Date(entry.date).toLocaleDateString('de-DE')}: Stolz: ${entry.proud}, Gut gelungen: ${entry.good}\n`;
+        });
+        report += `\n`;
+      }
+      if (data.positives?.length > 0) {
+        report += `POSITIVES & RESSOURCEN (${data.positives.length} Einträge)\n`;
+        report += `-------------------------------\n`;
+        data.positives.slice(-5).forEach(entry => {
+          report += `${new Date(entry.date).toLocaleDateString('de-DE')}: Dankbarkeit: ${entry.gratitude}, Ressourcen: ${entry.resources}\n`;
+        });
+        report += `\n`;
+      }
+      if (data.daily.length > 0) {
+        report += `TÄGLICHE CHECK-INS (${data.daily.length} Einträge)\n`;
+        report += `-----------------------------------\n`;
+        data.daily.slice(-10).forEach(entry => {
+          report += `${new Date(entry.date).toLocaleDateString('de-DE')}: Stimmung ${entry.feeling}/10\n`;
+          if (entry.thoughts) report += `Gedanken: ${entry.thoughts}\n`;
+          if (entry.goal) report += `Ziel: ${entry.goal}\n`;
+          report += `\n`;
+        });
+      }
+
+      if (data.moods.length > 0) {
+        report += `STIMMUNGEN (${data.moods.length} Einträge)\n`;
+        report += `------------------------------\n`;
+        data.moods.slice(-5).forEach(entry => {
+          report += `${new Date(entry.date).toLocaleDateString('de-DE')}: ${entry.moods.join(', ')} (${entry.intensity}/10)\n`;
+          if (entry.reason) report += `Grund: ${entry.reason}\n`;
+          report += `\n`;
+        });
+      }
+
+      if (data.gratitude.length > 0) {
+        report += `DANKBARKEIT (${data.gratitude.length} Einträge)\n`;
+        report += `-------------------------------\n`;
+        data.gratitude.slice(-5).forEach(entry => {
+          report += `${new Date(entry.date).toLocaleDateString('de-DE')}:\n`;
+          entry.gratitude.forEach((item, i) => {
+            if (item) report += `${i + 1}. ${item}\n`;
+          });
+          if (entry.moment) report += `Schöner Moment: ${entry.moment}\n`;
+          report += `\n`;
+        });
+      }
+
+      if (data.journal?.length > 0) {
+        report += `JOURNAL (${data.journal.length} Einträge)\n`;
+        report += `-------------------------------\n`;
+        data.journal.slice(-5).forEach(entry => {
+          report += `${new Date(entry.date).toLocaleDateString('de-DE')}: ${entry.content}\n`;
+        });
+        report += `\n`;
+      }
+
+      return report;
+    }
+
+    function anonymizeData(originalData) {
+      const anonymized = JSON.parse(JSON.stringify(originalData));
+      
+      function anonymizeText(text) {
+        if (!text) return text;
+        return text
+          .replace(/\b[A-ZÄÖÜ][a-zäöüß]+\b/g, '[NAME]')
+          .replace(/\b\d{4,}\b/g, '[NUMMER]')
+          .replace(/@[\w.-]+/g, '[EMAIL]')
+          .replace(/\b\d{1,2}:\d{2}\b/g, '[ZEIT]');
+      }
+      
+      function processEntry(entry) {
+        Object.keys(entry).forEach(key => {
+          if (typeof entry[key] === 'string' && key !== 'date') {
+            entry[key] = anonymizeText(entry[key]);
+          } else if (Array.isArray(entry[key])) {
+            entry[key] = entry[key].map(item => 
+              typeof item === 'string' ? anonymizeText(item) : item
+            );
+          }
+        });
+        return entry;
+      }
+      
+      Object.keys(anonymized).forEach(category => {
+        if (Array.isArray(anonymized[category])) {
+          anonymized[category] = anonymized[category].map(processEntry);
+        }
+      });
+      
+      return anonymized;
+    }
+
+    function downloadFile(content, filename, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      alert('✅ Daten erfolgreich exportiert!');
+    }
+
+    function confirmDelete() {
+      if (confirm('⚠️ ACHTUNG: Alle Daten werden unwiderruflich gelöscht!\n\nMöchtest du vorher einen Export machen?')) {
+        if (confirm('Letzte Chance: Wirklich ALLE Daten löschen?')) {
+          localStorage.removeItem('therapyWorkbook');
+          data = {
+            daily: [],
+            moods: [],
+            thoughts: [],
+            gratitude: [],
+            goals: [],
+            strengths: [],
+            positives: [],
+            selectedMoods: new Set()
+          };
+          updateProgress();
+          showStats();
+          alert('✅ Alle Daten wurden gelöscht.');
+        }
+      }
+    }
+
+    // App initialisieren
+    document.addEventListener('DOMContentLoaded', function() {
+      loadData();
+      showStats();
+      
+      // Automatische Krisenerkennung alle 30 Minuten
+      setInterval(() => {
+        const feeling = document.getElementById('daily-feeling').value;
+        if (feeling <= 2 && document.getElementById('crisis-banner').style.display === 'none') {
+          document.getElementById('crisis-banner').style.display = 'block';
+        }
+      }, 30 * 60 * 1000);
+      
+      console.log('🧠 Therapie-Arbeitsbuch geladen');
+      console.log('📊 Aktuelle Statistiken:', {
+        gesamt: data.daily.length + data.moods.length + data.thoughts.length + data.gratitude.length + data.goals.length,
+        täglich: data.daily.length,
+        stimmungen: data.moods.length,
+        gedanken: data.thoughts.length,
+        dankbarkeit: data.gratitude.length,
+        ziele: data.goals.length
+      });
+    });
+
+    // Therapeutischer GPT Prompt Generator
+    function generateTherapyPrompt() {
+      const exportData = {
+        summary: {
+          totalEntries: data.daily.length + data.moods.length + data.thoughts.length + data.gratitude.length + data.goals.length,
+          averageMood: data.daily.length > 0 ? (data.daily.reduce((sum, entry) => sum + parseInt(entry.feeling), 0) / data.daily.length).toFixed(1) : 0,
+          recentMoods: data.moods.slice(-5).map(m => m.moods).flat(),
+          recentThoughts: data.thoughts.slice(-3).map(t => t.type).filter(Boolean)
+        },
+        data: data
+      };
+
+      const prompt = `Du bist ein einfühlsamer therapeutischer Assistent. Analysiere folgende Daten aus einem Therapie-Arbeitsbuch:
+
+WICHTIGE HINWEISE:
+- Stelle KEINE Diagnosen
+- Bleibe ressourcenorientiert und hoffnungsvoll  
+- Gib konkrete, umsetzbare Empfehlungen
+- Markiere Krisenhinweise sofort
+
+DATEN:
+${JSON.stringify(exportData, null, 2)}
+
+ANALYSE-FOKUS:
+1. 🌱 Positive Entwicklungen und Stärken
+2. 🎯 Bewältigungsmuster und Ressourcen  
+3. 🚨 Unterstützungsbedarf oder Warnzeichen
+4. 📋 Konkrete nächste Schritte
+5. 💡 Empfehlungen für weiteres Vorgehen
+
+Beginne deine Antwort mit einer kurzen, ermutigenden Einschätzung.`;
+
+      navigator.clipboard.writeText(prompt).then(() => {
+        alert('📋 Therapeutischer GPT-Prompt wurde in die Zwischenablage kopiert!\n\nDu kannst ihn jetzt in einen therapeutischen GPT einfügen.');
+      }).catch(() => {
+        console.log('Prompt für therapeutische Analyse:', prompt);
+        alert('📋 Prompt wurde in der Konsole ausgegeben (F12 öffnen zum Kopieren)');
+      });
+    }
+
+    // Tastatur-Shortcuts
+    document.addEventListener('keydown', function(e) {
+      // Strg/Cmd + S zum Speichern der aktuellen Sektion
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        const activeSection = document.querySelector('.content-section.active');
+        if (activeSection) {
+          const sectionId = activeSection.id;
+          switch(sectionId) {
+            case 'daily': saveDaily(); break;
+            case 'mood': saveMood(); break;
+            case 'thoughts': saveThoughts(); break;
+            case 'gratitude': saveGratitude(); break;
+            case 'goals': saveGoals(); break;
+            case 'notiz': saveNote(); break;
+            case 'hausaufgabe': saveHomework(); break;
+          }
+        }
+      }
+      
+      // Escape zum Schließen von Modals
+      if (e.key === 'Escape') {
+        hideHelp();
+        hideCrisis();
+      }
+    });
+
+    // Verbesserte Navigation mit ARIA und Fokus
+    document.querySelectorAll('.nav-tab').forEach((tab, idx, tabs) => {
+      tab.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          const next = tabs[(idx + 1) % tabs.length];
+          next.focus();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          const prev = tabs[(idx - 1 + tabs.length) % tabs.length];
+          prev.focus();
+        }
+      });
+    });
+
+    // Zusätzliche Utility-Funktionen für erweiterte Nutzung
+    window.therapyWorkbook = {
+      exportData: () => data,
+      importData: (newData) => {
+        data = { ...data, ...newData };
+        saveData();
+      },
+      getStats: showStats,
+      generatePrompt: generateTherapyPrompt,
+      version: "1.0"
+    };
+
+    // Chart.js Mood-Chart anzeigen
+    function renderMoodChart() {
+      const ctx = document.getElementById('moodChart').getContext('2d');
+      const moodData = data.moods.map(entry => ({
+        x: new Date(entry.date),
+        y: parseInt(entry.intensity)
+      }));
+      if(window.moodChartInstance) window.moodChartInstance.destroy();
+      window.moodChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          datasets: [{
+            label: 'Stimmungsverlauf',
+            data: moodData,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37,99,235,0.1)',
+            tension: 0.2
+          }]
+        },
+        options: {
+          scales: {
+            x: { type: 'time', time: { unit: 'day' }, title: { display: true, text: 'Datum' } },
+            y: { min: 1, max: 5, title: { display: true, text: 'Intensität' } }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+    // Mood-Dropdown synchronisieren
+    function updateMoodDropdown() {
+      const val = document.getElementById('moodType').value;
+      if(val) {
+        document.querySelectorAll('.emotion-btn').forEach(btn => {
+          btn.classList.remove('active');
+          if(btn.textContent.includes(document.getElementById('moodType').selectedOptions[0].textContent.trim())) {
+            btn.classList.add('active');
+          }
+        });
+      }
+    }
+    // Automatische Hilfe bei niedriger Stimmung
+    function checkMoodIntensity() {
+      const intensity = parseInt(document.getElementById('moodLevel').value);
+      if(intensity < 3) {
+        showTab('grounding');
+        showToast('🔔 Brauchst du Hilfe? Hier sind Grounding-Techniken', 'warning');
+      }
+    }
+    document.getElementById('moodLevel').addEventListener('change', checkMoodIntensity);
+    // Toast-Funktion
+    function showToast(msg, type) {
+      let toast = document.createElement('div');
+      toast.className = 'toast ' + (type||'');
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(()=>toast.remove(), 3500);
+    }
+    // Mood-Chart nach dem Laden anzeigen
+    document.addEventListener('DOMContentLoaded', function() {
+      // ...existing code...
+      renderMoodChart();
+      renderClusterTriggerTable();
+    });
+  </script>
+</body>
+</html>
