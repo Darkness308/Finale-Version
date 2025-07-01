@@ -1,0 +1,21 @@
+{
+    "python.analysis.addHoverSummaries": true,
+    "python.analysis.autoFormatStrings": true,
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.completeFunctionParens": true,
+    "python.analysis.typeEvaluation.enableReachabilityAnalysis": true,
+    "debugpy.showPythonInlineValues": true,
+    "js/ts.implicitProjectConfig.checkJs": true,
+    "typescript.disableAutomaticTypeAcquisition": false,
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "github.copilot.chat.useProjectTemplates": true,
+    "github.copilot.nextEditSuggestions.enabled": true,
+    "github.copilot.chat.codesearch.enabled": true,
+    "github.copilot.chat.agent.thinkingTool": true,
+    "github.copilot.chat.languageContext.inline.typescript.enabled": true,
+    "githubIssues.alwaysPromptForNewIssueRepo": true,
+    "githubPullRequests.experimental.chat": true,
+    "githubPullRequests.showPullRequestNumberInTree": true,
+    "html.format.indentHandlebars": true,
+    "html.format.indentInnerHtml": true
+}
