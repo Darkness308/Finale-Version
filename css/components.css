@@ -39,9 +39,6 @@
 .slide {
   display: none;
 }
-.progress-fill {
-  transition: width 0.3s;
-}
 .visually-hidden {
   display: none !important;
 }

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🧠 Therapie-Arbeitsbuch</title>
+  <!-- Refactored Version 2.0.0 - DSGVO-konform, sicher und modular -->
   <link rel="stylesheet" href="therapeutic_workbook.css">
   <!-- External Libraries mit SRI für Sicherheit -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js" 
@@ -24,7 +25,7 @@
     <button class="btn btn-secondary" data-action="hide-crisis" aria-label="Banner schließen">OK</button>
   </div>
 
-  <div class="container">
+  <div class="container" id="main-content">
     <!-- Header -->
     <div class="header">
       <h1>🧠 Mein Therapie-Arbeitsbuch</h1>
@@ -112,113 +113,72 @@
     <section id="mood" class="content-section mood-section" role="tabpanel" aria-hidden="true">
       <h2>😊 Wie fühlst du dich? <span class="mood-hint" title="Hier kannst du deine aktuelle Stimmung und Gefühle festhalten.">ℹ️</span></h2>
       <div class="tip mood-tip">💡 Wähle deine Stimmung, Gefühle und Körperreaktionen. Je genauer du bist, desto besser kannst du dich selbst verstehen!</div>
+      
       <div class="mood-steps">
         <span class="step active">1. Stimmung wählen</span>
         <span class="step">2. Gefühle & Intensität</span>
         <span class="step">3. Körper & Auslöser</span>
         <span class="step">4. Umgang finden</span>
       </div>
-      <label>Stimmungslage (schnell): <span class="mood-help" title="Wähle aus, wie du dich gerade fühlst.">❔</span></label>
-      <select id="moodType" data-action="update-mood-dropdown">
-        <option value="">-- Wähle --</option>
-        <option value="happy">😊 Freude</option>
-        <option value="anxious">😨 Angst</option>
-        <option value="angry">😠 Wut</option>
-        <option value="sad">😢 Trauer</option>
-        <option value="calm">😐 Gleichgültigkeit</option>
-      </select>
-      <div class="emotion-grid" id="emotionGrid">
-        <button class="emotion-btn" data-category="FREUDE" data-action="toggle-emotion">😊 Freude</button>
-        <button class="emotion-btn" data-category="ZUNEIGUNG" data-action="toggle-emotion">💖 Zuneigung</button>
-        <button class="emotion-btn" data-category="TRAUER" data-action="toggle-emotion">😢 Trauer</button>
-        <button class="emotion-btn" data-category="ÄRGER" data-action="toggle-emotion">😠 Ärger</button>
-        <button class="emotion-btn" data-category="ANGST" data-action="toggle-emotion">😨 Angst</button>
-        <button class="emotion-btn" data-category="GLEICHGÜLTIGKEIT" data-action="toggle-emotion">😐 Gleichgültigkeit</button>
-        <button class="emotion-btn sub" data-parent="FREUDE" data-action="toggle-emotion">Glück</button>
-        <button class="emotion-btn sub" data-parent="TRAUER" data-action="toggle-emotion">Verzweiflung</button>
-        <button class="emotion-btn sub" data-parent="ÄRGER" data-action="toggle-emotion">Wut</button>
-        <button class="emotion-btn sub" data-parent="ANGST" data-action="toggle-emotion">Panik</button>
-        <button class="emotion-btn sub" data-parent="ZUNEIGUNG" data-action="toggle-emotion">Liebe</button>
-        <button class="emotion-btn sub" data-parent="GLEICHGÜLTIGKEIT" data-action="toggle-emotion">Abneigung</button>
-      </div>
-      <div id="emotion-intensities"></div>
-      <!-- Freitextfeld für Gefühle + Gesamt-Intensitätsregler -->
+      
       <div class="form-group">
-        <label for="moodDescription">Gefühle in eigenen Worten:</label>
-        <textarea id="moodDescription" placeholder="Beschreibe deine Stimmung, Gefühle oder Nuancen..." rows="2"></textarea>
+        <label>Stimmungslage (schnell): <span class="mood-help" title="Wähle aus, wie du dich gerade fühlst.">❔</span></label>
+        <select id="moodType">
+          <option value="">-- Wähle deine Stimmung --</option>
+          <option value="sehr-gut">😊 Sehr gut</option>
+          <option value="gut">🙂 Gut</option>
+          <option value="neutral">😐 Neutral</option>
+          <option value="schlecht">🙁 Schlecht</option>
+          <option value="sehr-schlecht">😢 Sehr schlecht</option>
+        </select>
       </div>
+
       <div class="form-group">
-        <label for="moodIntensity">Wie stark ist dieses Gefühl insgesamt?</label>
-        <input type="range" id="moodIntensity" min="1" max="10" value="5" data-action="update-mood-intensity">
-        <span id="moodIntensityValue">5</span>/10
+        <label for="moodLevel">Intensität (1=sehr niedrig, 5=sehr hoch):</label>
+        <input type="range" id="moodLevel" min="1" max="5" value="3">
+        <span id="moodLevelDisplay">3</span>
       </div>
-      <div class="mood-explanation">
-        <strong>Was ist der Gefühlsstern?</strong> <br>
-        <span>Der Gefühlsstern hilft dir, verschiedene Gefühle zu erkennen und zu benennen. Klicke auf die Buttons, um deine aktuellen Gefühle auszuwählen. Für jedes Gefühl kannst du die Intensität angeben. Der Durchschnitt wird unten angezeigt.</span>
-      </div>
-      <div id="average-intensity-box" class="mood-explanation"></div>
-      <label>Körperreaktionen (Mehrfachauswahl): <span class="mood-help" title="Wie reagiert dein Körper?">❔</span></label>
-      <div class="checkbox-grid">
-        <label><input type="checkbox" name="bodyReactions" value="Herzrasen"> Herzrasen</label>
-        <label><input type="checkbox" name="bodyReactions" value="Schwitzen"> Schwitzen</label>
-        <label><input type="checkbox" name="bodyReactions" value="Zittern"> Zittern</label>
-        <label><input type="checkbox" name="bodyReactions" value="Atembeschwerden"> Atembeschwerden</label>
-        <label><input type="checkbox" name="bodyReactions" value="Muskelspannung"> Muskelspannung</label>
-        <label><input type="checkbox" name="bodyReactions" value="Übelkeit"> Übelkeit</label>
-      </div>
-      <div class="mood-explanation">
-        <strong>Körper & Gefühle:</strong> <br>
-        <span>Dein Körper zeigt oft zuerst, wie es dir geht. Hier sind typische Signale:</span>
-        <div class="body-signals-grid">
-          <div class="disorder-box">
-            <h4>Komplexe PTBS 🛡️</h4>
-            <ul>
-              <li>Plötzliche Anspannung/Erstarrung</li>
-              <li>Tunnel-/eingeengtes Sehen</li>
-              <li>Gefühlstaubheit im Körper</li>
-              <li>Herzrasen ohne Grund</li>
-              <li>Schwierigkeiten beim Atmen</li>
-            </ul>
-          </div>
-          <div class="disorder-box">
-            <h4>ADHS 🎯</h4>
-            <ul>
-              <li>Innere Unruhe/Kribbeln</li>
-              <li>Gedankenkarussell spürbar</li>
-              <li>Körperliche Rastlosigkeit</li>
-              <li>Hunger auf Süßes/Koffein</li>
-              <li>Erschöpfung nach Reizen</li>
-            </ul>
-          </div>
-          <div class="disorder-box">
-            <h4>Borderline 🌊</h4>
-            <ul>
-              <li>Starke Gefühlswellen im Körper</li>
-              <li>Anspannung unter der Haut</li>
-              <li>Druck in Brust/Kopf</li>
-              <li>Impuls zu selbstverletzen</li>
-              <li>Wechsel zw. Energie/Erschöpfung</li>
-            </ul>
-          </div>
-          <div class="disorder-box">
-            <h4>Autismus-Spektrum 🧩</h4>
-            <ul>
-              <li>Überempfindlichkeit auf Reize</li>
-              <li>Körperliche Überlastung</li>
-              <li>Probleme mit Temperatur/Berührung</li>
-              <li>Verdauungsbeschwerden bei Stress</li>
-             
-            </ul>
-          </div>
+
+      <div class="form-group">
+        <label>Gefühle (Mehrfachauswahl):</label>
+        <div class="emotion-grid">
+          <button type="button" class="emotion-btn" data-emotion="glücklich">😊 Glücklich</button>
+          <button type="button" class="emotion-btn" data-emotion="traurig">😢 Traurig</button>
+          <button type="button" class="emotion-btn" data-emotion="ängstlich">😰 Ängstlich</button>
+          <button type="button" class="emotion-btn" data-emotion="wütend">😡 Wütend</button>
+          <button type="button" class="emotion-btn" data-emotion="hoffnungsvoll">🌈 Hoffnungsvoll</button>
+          <button type="button" class="emotion-btn" data-emotion="einsam">😔 Einsam</button>
+          <button type="button" class="emotion-btn" data-emotion="gestresst">😤 Gestresst</button>
+          <button type="button" class="emotion-btn" data-emotion="entspannt">😌 Entspannt</button>
         </div>
-        <p class="signals-tip">💡 Diese Signale sind typische Beispiele. Deine persönlichen Körperreaktionen können anders sein.</p>
       </div>
-      <label>Ausgangssituation (A): <span class="mood-help" title="Was ist passiert?">❔</span></label>
-      <textarea id="situation" placeholder="Was ist objektiv passiert?"></textarea>
-      <button class="btn btn-secondary btn-xs" data-action="copy-to-trigger-diary">✔️ Als Trigger speichern</button>
-      <label>Persönliche Bewertung (B): <span class="mood-help" title="Was hast du darüber gedacht?">❔</span></label>
-      <textarea id="thoughtsMood" placeholder="Was bedeutet das für mich?"></textarea>
-      <button class="btn btn-secondary btn-xs" data-action="copy-to-thoughts" data-source="thoughtsMood">✔️ Als Gedanken speichern</button>
+
+      <div id="average-intensity-box" class="mood-explanation"></div>
+
+      <div class="form-group">
+        <label>Körperreaktionen (Mehrfachauswahl): <span class="mood-help" title="Wie reagiert dein Körper?">❔</span></label>
+        <div class="checkbox-grid">
+          <label><input type="checkbox" name="bodyReactions" value="Herzrasen"> Herzrasen</label>
+          <label><input type="checkbox" name="bodyReactions" value="Schwitzen"> Schwitzen</label>
+          <label><input type="checkbox" name="bodyReactions" value="Zittern"> Zittern</label>
+          <label><input type="checkbox" name="bodyReactions" value="Verspannung"> Verspannung</label>
+          <label><input type="checkbox" name="bodyReactions" value="Müdigkeit"> Müdigkeit</label>
+          <label><input type="checkbox" name="bodyReactions" value="Unruhe"> Unruhe</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Ausgangssituation (A): <span class="mood-help" title="Was ist passiert?">❔</span></label>
+        <textarea id="situation" placeholder="Was ist objektiv passiert?"></textarea>
+        <button class="btn btn-secondary btn-xs" data-action="copy-to-trigger-diary">✔️ Als Trigger speichern</button>
+      </div>
+
+      <div class="form-group">
+        <label>Persönliche Bewertung (B): <span class="mood-help" title="Was hast du darüber gedacht?">❔</span></label>
+        <textarea id="thoughtsMood" placeholder="Was bedeutet das für mich?"></textarea>
+        <button class="btn btn-secondary btn-xs" data-action="copy-to-thoughts">✔️ Als Gedanken speichern</button>
+      </div>
+
       <div class="coping-box">
         <label>Umgang damit: <span class="mood-help" title="Wie bist du damit umgegangen oder möchtest du damit umgehen?">❔</span></label>
         <select id="copingStrategy">
@@ -226,18 +186,27 @@
           <option value="grounding">Grounding-Technik</option>
           <option value="reframe">Gedanken umformulieren</option>
           <option value="accept">Akzeptanz</option>
+          <option value="breathing">Atemübung</option>
+          <option value="movement">Bewegung</option>
+          <option value="social">Sozialen Kontakt suchen</option>
         </select>
-        <button data-action="suggest-coping">Vorschlag</button>
-        <button class="btn btn-secondary btn-xs ml-half-em" data-action="copy-to-thoughts" data-source="copingStrategy" data-append="true">✔️ Als Gedanken speichern</button>
+        <button class="btn btn-info" data-action="suggest-coping">Vorschlag</button>
+        <button class="btn btn-secondary btn-xs ml-half-em" data-action="copy-coping-to-thoughts">✔️ Als Gedanken speichern</button>
       </div>
+
       <div class="mood-explanation">
         <strong>Tipp:</strong> <br>
         <span>Wenn du nicht weiterweißt, klicke auf "Vorschlag" für eine hilfreiche Strategie!</span>
       </div>
+
+      <div class="chart-container">
+        <canvas id="moodChart" width="400" height="200"></canvas>
+      </div>
+
       <button class="btn btn-success mood-save-btn" data-action="save-mood">Speichern</button>
     </section>
 
-    <!-- SECTION: Gedanken-Sammler (angepasst) -->
+    <!-- SECTION: Gedanken-Sammler -->
     <section id="gedanken" class="content-section" role="tabpanel" aria-hidden="true">
       <h2>💭 Gedanken-Sammler</h2>
       <div class="tip">🧠 Manchmal hilft es, Gedanken einfach "rauszuschreiben" und loszulassen.</div>
@@ -251,179 +220,103 @@
           <option value="">Wählen...</option>
           <option value="worry">Sorgen/Grübeln</option>
           <option value="memory">Erinnerungen</option>
-          <option value="future">Zukunft</option>
-          <option value="self-doubt">Selbstzweifel</option>
-          <option value="anger">Wut / Hass</option>
-          <option value="conflict">Zerissenheit</option>
-          <option value="positive">Positive Gedanken</option>
-          <option value="other">Andere</option>
+          <option value="planning">Zukunftsplanung</option>
+          <option value="self-reflection">Selbstreflexion</option>
         </select>
       </div>
       <div class="form-group">
-        <label for="microGoal">Was wäre ein kleiner nächster Schritt?</label>
-        <input type="text" id="microGoal" placeholder="Mini-Schritt, um dich zu entlasten">
+        <label for="thought-context">Kontext/Auslöser:</label>
+        <input type="text" id="thought-context" placeholder="Was hat diese Gedanken ausgelöst?">
       </div>
       <div class="crosslink">
-        <button class="btn btn-secondary" data-copy-from="microGoal" data-copy-to="homework">Als Hausaufgabe übernehmen</button>
+        <button class="btn btn-secondary" data-action="copy-thoughts-to-mood">In Stimmungs-Modul verwenden</button>
       </div>
       <button class="btn btn-success" data-action="save-thoughts">💾 Gedanken speichern</button>
       <button class="btn btn-secondary" data-action="clear-thoughts">🗑️ Loslassen</button>
     </section>
 
-    <!-- SECTION: Positives & Ressourcen (angepasst) -->
+    <!-- SECTION: Positives & Ressourcen -->
     <section id="positives" class="content-section" role="tabpanel" aria-hidden="true">
       <h2>🙏 Positives & Ressourcen</h2>
       <div class="form-group">
-        <label for="gratitude">Wofür bist du heute dankbar?</label>
-        <textarea id="gratitude" placeholder="Schreibe auf, wofür du heute dankbar bist..."></textarea>
+        <label for="gratitude">Wofür bin ich dankbar?</label>
+        <textarea id="gratitude" placeholder="Drei Dinge, für die ich heute dankbar bin..."></textarea>
       </div>
       <div class="form-group">
-        <label for="resources">Was gibt dir Kraft?</label>
-        <textarea id="resources" placeholder="Dinge, Menschen oder Orte, die dich stärken"></textarea>
+        <label for="achievement">Was habe ich heute erreicht?</label>
+        <textarea id="achievement" placeholder="Auch kleine Erfolge zählen..."></textarea>
       </div>
-      <div class="crosslink">
-        <button class="btn btn-secondary" data-action="copy-value" data-source="gratitude" data-target="journal">Als Journal-Eintrag übernehmen</button>
+      <div class="form-group">
+        <label for="kindness">Wie war ich heute freundlich?</label>
+        <textarea id="kindness" placeholder="Zu mir selbst oder anderen..."></textarea>
       </div>
-      <button class="btn btn-success" data-action="save-positives">Speichern</button>
+      <button class="btn btn-success" data-action="save-positive">Speichern</button>
     </section>
 
-    <!-- Daily Check-in -->
-    <section id="daily" class="content-section active" role="tabpanel">
-      <h2>📅 Wie geht es dir heute?</h2>
-      <div class="tip">
-        💡 Nimm dir 2-3 Minuten Zeit. Es gibt keine richtigen oder falschen Antworten.
-      </div>
-
+    <!-- SECTION: Notizen -->
+    <section id="notiz" class="content-section" role="tabpanel" aria-hidden="true">
+      <h2>📝 Freie Notizen</h2>
       <div class="form-group">
-        <label for="daily-feeling">Wie fühlst du dich heute? <span class="scale-label-hint">(1 = sehr schlecht, 10 = sehr gut)</span></label>
-        <div class="scale-container">
-          <span class="scale-emoji scale-emoji-sad">😢</span>
-          <input type="range" id="daily-feeling" min="1" max="10" value="5" class="scale-input" aria-describedby="feeling-help">
-          <span class="scale-emoji scale-emoji-happy">😊</span>
-          <span id="feeling-value" class="scale-value">5</span>
-        </div>
-        <div id="feeling-help" class="sr-only">Bewerte dein Gefühl von 1 sehr schlecht bis 10 sehr gut</div>
+        <label for="noteTitle">Titel/Thema:</label>
+        <input type="text" id="noteTitle" placeholder="Worum geht es?">
       </div>
-
       <div class="form-group">
-        <label for="daily-thoughts">Was beschäftigt dich heute?</label>
-        <textarea id="daily-thoughts" placeholder="Lass deine Gedanken fließen..." 
-                  aria-describedby="thoughts-help"></textarea>
-        <div id="thoughts-help" class="sr-only">Schreibe einfach auf, was dir durch den Kopf geht</div>
+        <label for="noteContent">Inhalt:</label>
+        <textarea id="noteContent" rows="8" placeholder="Schreibe hier deine Notizen..."></textarea>
       </div>
-
       <div class="form-group">
-        <label for="daily-goal">Ein kleines Ziel für heute:</label>
-        <input type="text" id="daily-goal" placeholder="z.B. 10 Min spazieren, jemanden anrufen...">
-      </div>
-
-      <div class="daily-actions">
-        <button class="btn btn-success" data-action="save-daily">💾 Speichern</button>
-        <button class="btn btn-danger" data-action="trigger-crisis">🆘 Mir geht es sehr schlecht</button>
-      </div>
-    </section>
-
-    <!-- Export -->
-    <section id="export" class="content-section" role="tabpanel">
-      <h2>📤 Deine Daten</h2>
-      
-      <div class="export-area">
-        <h3>🔒 Datenschutz garantiert</h3>
-        <p>Alle Daten bleiben auf deinem Gerät. Du entscheidest, was exportiert wird.</p>
-      </div>
-
-      <div class="stats-grid" id="stats-display">
-        <!-- Stats werden hier dynamisch eingefügt -->
-      </div>
-
-      <div class="form-group">
-        <label for="export-format">Export-Format:</label>
-        <select id="export-format">
-          <option value="json">JSON (für therapeutische GPTs)</option>
-          <option value="text">Lesbare Zusammenfassung</option>
-          <option value="anonymous">Anonymisierte Daten</option>
-          <option value="markdown">Markdown (für Notizen)</option>
-        </select>
-      </div>
-
-      <div class="export-buttons">
-        <button class="btn btn-success" data-action="export-data">📤 Daten exportieren</button>
-        <button class="btn btn-secondary" data-action="show-stats">📊 Statistiken anzeigen</button>
-        <button class="btn btn-danger" data-action="confirm-delete">🗑️ Alle Daten löschen</button>
-      </div>
-    </section>
-
-    <!-- MODULE: Notiz an Therapeut -->
-    <section id="notiz" class="content-section" role="tabpanel">
-      <h2>Notiz an Therapeut</h2>
-      <label for="noteTherapist">Was möchte ich mit meinem Therapeuten besprechen?</label>
-      <textarea id="noteTherapist" placeholder="Themen, die du in der Sitzung ansprechen willst"></textarea>
-      <div class="crosslink">
-        <button class="btn btn-secondary" data-action="copy-value" data-source="noteTherapist" data-target="homework">Als Hausaufgabe übernehmen</button>
+        <label for="noteTags">Tags (durch Komma getrennt):</label>
+        <input type="text" id="noteTags" placeholder="therapie, wichtig, erinnerung">
       </div>
       <button class="btn btn-success" data-action="save-note">Speichern</button>
     </section>
 
-    <!-- MODULE: Hausaufgabe -->
-    <section id="hausaufgabe" class="content-section" role="tabpanel">
-      <h2>Hausaufgabe</h2>
-      <label for="homework">Was nehme ich mir konkret vor?</label>
-      <textarea id="homework" placeholder="Mini-Schritte oder Aufgaben für die Woche"></textarea>
+    <!-- SECTION: Hausaufgaben -->
+    <section id="hausaufgabe" class="content-section" role="tabpanel" aria-hidden="true">
+      <h2>📚 Therapeutische Hausaufgaben</h2>
+      <div class="form-group">
+        <label for="homeworkTask">Aufgabe/Übung:</label>
+        <textarea id="homeworkTask" placeholder="Was soll ich bis zum nächsten Termin machen?"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="homeworkDeadline">Bis wann:</label>
+        <input type="date" id="homeworkDeadline">
+      </div>
+      <div class="form-group">
+        <label for="homeworkPriority">Priorität:</label>
+        <select id="homeworkPriority">
+          <option value="niedrig">Niedrig</option>
+          <option value="mittel" selected>Mittel</option>
+          <option value="hoch">Hoch</option>
+        </select>
+      </div>
       <button class="btn btn-success" data-action="save-homework">Speichern</button>
     </section>
 
-    <!-- SECTION: Journal -->
-    <section id="journal" class="content-section" role="tabpanel" aria-hidden="true">
-      <h2>📓 Journal</h2>
-      <label for="journalEntry">Freier Eintrag:</label>
-      <textarea id="journalEntry" placeholder="Schreibe hier alles, was du festhalten möchtest..."></textarea>
-      <button class="btn btn-success" data-action="save-journal">Speichern</button>
-    </section>
-
-    <!-- SECTION: Kommunikation (Vier-Ohren-Modell) -->
+    <!-- SECTION: Kommunikation -->
     <section id="kommunikation" class="content-section" role="tabpanel" aria-hidden="true">
-      <h2>🗣️ Kommunikation & Vier-Ohren-Modell</h2>
-      <div class="tip">Verbessere deine Kommunikation mit Übungen nach Schulz von Thun – angepasst für neurodiverse Teams.</div>
-      <div class="four-ears-grid">
-        <div class="four-ear-card">
-          <h3>Sachebene</h3>
-          <p>Was sind die Fakten? <br><em>Stell dir vor: Du bist ein Wissenschaftler, der nur beobachtet.</em></p>
-          <label>Fakten notieren:</label>
-          <textarea placeholder="Was ist wirklich passiert?"></textarea>
-          <div class="neuro-tip">PTBS: Atme tief. Autismus: Checkliste nutzen.</div>
-        </div>
-        <div class="four-ear-card">
-          <h3>Beziehungsebene</h3>
-          <p>Wie ist unsere Verbindung? <br><em>Stell dir vor: Das Band zwischen euch wird gestärkt.</em></p>
-          <label>Gefühl benennen:</label>
-          <textarea placeholder="Wie fühle ich mich dabei?"></textarea>
-          <div class="neuro-tip">Borderline: Ruhig teilen. Autismus: Klare Worte.</div>
-        </div>
-        <div class="four-ear-card">
-          <h3>Selbstoffenlegung</h3>
-          <p>Was sagt es über mich? <br><em>Stell dir vor: Du öffnest ein Fenster zu deinen Gefühlen.</em></p>
-          <label>Was verrät es über mich?</label>
-          <textarea placeholder="Was sagt das über mich?"></textarea>
-          <div class="neuro-tip">PTBS: Trigger benennen. ADHS: Kurz halten.</div>
-        </div>
-        <div class="four-ear-card">
-          <h3>Appell</h3>
-          <p>Was will ich erreichen? <br><em>Stell dir vor: Dein Wunsch ist ein Wegweiser.</em></p>
-          <label>Appell formulieren:</label>
-          <textarea placeholder="Was wünsche ich mir konkret?"></textarea>
-          <div class="neuro-tip">Borderline: Team betonen. Autismus: Konkrete Anweisungen.</div>
-        </div>
+      <h2>🗣️ Kommunikations-Reflexion</h2>
+      <div class="form-group">
+        <label for="commPerson">Mit wem:</label>
+        <input type="text" id="commPerson" placeholder="Name oder Beziehung">
       </div>
-      <div class="download-box">
-        <h4>Arbeitsblätter & Karteikarten</h4>
-        <a href="Therapieplan-Uebersicht.markdown" download>Therapieplan-Übersicht (Markdown)</a><br>
-        <a href="Gefuehls-Trigger-Tagebuch.markdown" download>Gefühls- und Trigger-Tagebuch (Markdown)</a><br>
-        <a href="VierOhrenKarteikarten.tex" download>Vier-Ohren-Karteikarten (LaTeX)</a>
-        <div class="latex-hint">
-          <strong>LaTeX-Anleitung:</strong> Speichere die Datei und kompiliere sie mit <code>pdflatex VierOhrenKarteikarten.tex</code>.<br>
-          Das Ergebnis ist ein PDF mit vier Karteikarten (A6-Format empfohlen).
-        </div>
+      <div class="form-group">
+        <label for="commSituation">Situation:</label>
+        <textarea id="commSituation" placeholder="Was ist passiert?"></textarea>
       </div>
+      <div class="form-group">
+        <label for="commFeeling">Mein Gefühl dabei:</label>
+        <textarea id="commFeeling" placeholder="Wie habe ich mich gefühlt?"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="commResponse">Meine Reaktion:</label>
+        <textarea id="commResponse" placeholder="Wie habe ich reagiert?"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="commImprovement">Was könnte ich anders machen:</label>
+        <textarea id="commImprovement" placeholder="Verbesserungsideen für ähnliche Situationen"></textarea>
+      </div>
+      <button class="btn btn-success" data-action="save-communication">Speichern</button>
     </section>
 
     <!-- SECTION: Cluster-Trigger-Analyse -->
@@ -447,7 +340,7 @@
           <!-- Dynamisch per JS -->
         </tbody>
       </table>
-      <div class="trigger-warning" id="clusterTriggerWarning" class="hidden"></div>
+      <div class="trigger-warning hidden" id="clusterTriggerWarning"></div>
     </section>
 
     <!-- SECTION: Vier-Ohren Interaktives Training -->
@@ -455,7 +348,7 @@
       <h2>🎯 Vier-Ohren Interaktives Training</h2>
       
       <!-- Onboarding/Willkommens-Slide -->
-      <div id="onboarding-slide" class="slide active">
+      <div id="training-onboarding-slide" class="slide active">
         <h3>🧠 Willkommen zum Vier-Ohren-Training</h3>
         <div class="tip">Dieses Modul kann sensible Themen berühren. Lies diese Hinweise aufmerksam:</div>
         <ul>
@@ -463,14 +356,14 @@
           <li>🫂 <strong>Trauma-Sensitiv:</strong> Manche Reflexionen können starke Gefühle auslösen. Nutze Notfall-Strategien!</li>
           <li>🧰 <strong>DBT-Skills:</strong> Grounding, Reizoffenheit, Radikale Akzeptanz.</li>
         </ul>
-        <button class="btn btn-success" onclick="startTraining()">✅ Start Training</button>
+        <button class="btn btn-success" data-action="start-training">✅ Start Training</button>
       </div>
 
-      <div id="training-slides" class="training-slides visually-hidden">
+      <div id="training-slides-container" style="display:none;">
         <div class="slide-navigation">
           <span id="slide-counter">Slide 1 von 6</span>
           <div class="progress-bar">
-            <div class="progress-fill" id="training-progress"></div>
+            <div class="progress-fill" id="training-progress" style="width: 16.6%"></div>
           </div>
         </div>
         
@@ -480,10 +373,10 @@
             <p>Jede Nachricht hat vier Seiten: Sachinhalt, Selbstoffenbarung, Beziehung und Appell.</p>
             <div class="training-visual">
               <div class="four-ears-mini">
-                <div class="ear">📊 Sache</div>
-                <div class="ear">💭 Selbst</div>
-                <div class="ear">❤️ Beziehung</div>
-                <div class="ear">🎯 Appell</div>
+                <div class="ear ear-sachlich">📊 Sache</div>
+                <div class="ear ear-selbst">💭 Selbst</div>
+                <div class="ear ear-beziehung">❤️ Beziehung</div>
+                <div class="ear ear-appell">🎯 Appell</div>
               </div>
             </div>
           </div>
@@ -503,8 +396,8 @@
             <h3>Was passiert bei einseitigem Hören?</h3>
             <p>Einseitiges Hören kann Missverständnisse und emotionale Verletzungen auslösen.</p>
             <div class="form-group">
-              <label for="hearing-pattern">Mit welchem Ohr hörst du meistens?</label>
-              <select id="hearing-pattern">
+              <label for="hearing-pattern-training">Mit welchem Ohr hörst du meistens?</label>
+              <select id="hearing-pattern-training">
                 <option value="">-- Wähle --</option>
                 <option value="sache">📊 Sach-Ohr (Fakten)</option>
                 <option value="selbst">💭 Selbstoffenbarungs-Ohr</option>
@@ -519,34 +412,34 @@
             <h3>Root Cause Analyse (5 Why)</h3>
             <p>Erkunde die tieferen Gründe für dein Hörverhalten:</p>
             <div class="form-group">
-              <label for="why1">1. Warum höre ich oft mit dem Beziehungs-Ohr?</label>
-              <textarea id="why1" placeholder="z.B. Weil ich Angst habe, kritisiert zu werden"></textarea>
+              <label for="why1-training">1. Warum höre ich oft mit dem Beziehungs-Ohr?</label>
+              <textarea id="why1-training" placeholder="z.B. Weil ich Angst habe, kritisiert zu werden"></textarea>
             </div>
             <div class="form-group">
-              <label for="why2">2. Warum habe ich diese Angst?</label>
-              <textarea id="why2" placeholder="z.B. Weil ich früher oft kritisiert wurde"></textarea>
+              <label for="why2-training">2. Warum habe ich diese Angst?</label>
+              <textarea id="why2-training" placeholder="z.B. Weil ich früher oft kritisiert wurde"></textarea>
             </div>
             <div class="form-group">
-              <label for="why3">3. Warum war das so prägend?</label>
-              <textarea id="why3" placeholder="z.B. Weil ich als Kind sehr sensibel war"></textarea>
+              <label for="why3-training">3. Warum war das so prägend?</label>
+              <textarea id="why3-training" placeholder="z.B. Weil ich als Kind sehr sensibel war"></textarea>
             </div>
             <div class="form-group">
-              <label for="why4">4. Warum bin ich so sensibel?</label>
-              <textarea id="why4" placeholder="z.B. Wegen meiner neurologischen Besonderheiten"></textarea>
+              <label for="why4-training">4. Warum bin ich so sensibel?</label>
+              <textarea id="why4-training" placeholder="z.B. Wegen meiner neurologischen Besonderheiten"></textarea>
             </div>
             <div class="form-group">
-              <label for="why5">5. Wie kann ich damit heute umgehen?</label>
-              <textarea id="why5" placeholder="z.B. Indem ich bewusst alle vier Ohren nutze"></textarea>
+              <label for="why5-training">5. Wie kann ich damit heute umgehen?</label>
+              <textarea id="why5-training" placeholder="z.B. Indem ich bewusst alle vier Ohren nutze"></textarea>
             </div>
           </div>
           
           <div class="slide" id="slide-5">
             <h3>Trigger-Logik & DBT-Skills</h3>
             <div class="form-group">
-              <label for="triggerInput">Beschreibe eine Situation, die dich getriggert hat:</label>
-              <textarea id="triggerInput" placeholder="z.B. Mein Partner sagte: 'Du machst das falsch'"></textarea>
+              <label for="triggerInput-training">Beschreibe eine Situation, die dich getriggert hat:</label>
+              <textarea id="triggerInput-training" placeholder="z.B. Mein Partner sagte: 'Du machst das falsch'"></textarea>
             </div>
-            <div id="skillBox" class="tip">
+            <div id="skillBox-training" class="tip">
               <strong>🧰 Hilfreiche DBT-Skills:</strong> 
               <ul>
                 <li>Check the Facts: Was ist wirklich passiert?</li>
@@ -559,18 +452,18 @@
           
           <div class="slide" id="slide-6">
             <h3>Dein Kommunikationsmuster</h3>
-            <canvas id="ohrChart" width="400" height="200"></canvas>
+            <canvas id="ohrChart-training" width="400" height="200"></canvas>
             <div class="form-group">
-              <label for="pattern-reflection">Was erkennst du in deinem Muster?</label>
-              <textarea id="pattern-reflection" placeholder="Reflektiere über deine Erkenntnisse..."></textarea>
+              <label for="pattern-reflection-training">Was erkennst du in deinem Muster?</label>
+              <textarea id="pattern-reflection-training" placeholder="Reflektiere über deine Erkenntnisse..."></textarea>
             </div>
           </div>
         </div>
         
         <div class="slide-controls">
-          <button class="btn btn-secondary" onclick="prevSlide()" id="prev-btn" disabled>⬅️ Zurück</button>
+          <button class="btn btn-secondary" data-action="prev-slide" id="prev-btn" disabled>⬅️ Zurück</button>
           <button class="btn btn-primary" data-action="next-slide" id="next-btn">➡️ Weiter</button>
-          <button class="btn btn-success visually-hidden" data-action="complete-training" id="complete-btn">✅ Training abschließen</button>
+          <button class="btn btn-success" data-action="complete-training" id="complete-btn" style="display:none;">✅ Training abschließen</button>
         </div>
         
         <div class="export-training">
@@ -579,34 +472,30 @@
       </div>
     </section>
 
-    <!-- Onboarding/Willkommens-Slide -->
-  </div>
+    <!-- SECTION: Export -->
+    <section id="export" class="content-section" role="tabpanel" aria-hidden="true">
+      <h2>📤 Export & Statistiken</h2>
+      <div id="stats-display" class="stats-container">
+        <!-- Dynamisch gefüllt per JS -->
+      </div>
+      <div class="export-actions">
+        <h3>📊 Daten exportieren</h3>
+        <button class="btn btn-primary" data-action="export-data">Als JSON herunterladen</button>
+        <button class="btn btn-secondary" data-action="export-training">Als Markdown herunterladen</button>
+        <button class="btn btn-info" data-action="export-training">Therapeutischer GPT-Prompt</button>
+      </div>
+      <div class="privacy-section">
+        <h3>🔐 Datenschutz</h3>
+        <button class="btn btn-info" data-action="show-privacy">Datenschutz-Informationen</button>
+        <button class="btn btn-warning" data-action="backup-data">Daten sichern</button>
+        <button class="btn btn-danger" data-action="delete-all-data">Alle Daten löschen</button>
+      </div>
+    </section>
 
-  <!-- Help Modal -->
-  <div id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title" tabindex="-1">
-    <div class="help-modal-content">
-      <h2 id="help-modal-title">🆘 Sofort-Hilfe</h2>
-      <div class="help-modal-section">
-        <h3>🇩🇪 Deutschland:</h3>
-        <p><strong>Telefonseelsorge:</strong><br>0800 111 0 111 oder 0800 111 0 222<br>(24/7 kostenlos)</p>
-        <p><strong>Krisenchat:</strong><br><a href="https://krisenchat.de" target="_blank" rel="noopener">krisenchat.de</a></p>
-        <p><strong>Notruf:</strong> 112</p>
-      </div>
-      <div class="help-modal-tip">
-        💙 <strong>Du bist nicht allein.</strong> Deine Gefühle sind vorübergehend, auch wenn sie sich jetzt überwältigend anfühlen.
-      </div>
-      <button class="btn btn-secondary" data-action="hide-help">Schließen</button>
-    </div>
   </div>
 
   <div class="offline-hint">
     <strong>Hinweis:</strong> Diese App funktioniert komplett offline. Alle Daten und Tools bleiben auf deinem Gerät.
-  </div>
-
-  <!-- Die gesamte Anwendungslogik wurde in js/app.js und js/utils.js ausgelagert. -->
-
-    </section>
-
   </div>
 
   <!-- Modularisierte Scripts -->
@@ -624,7 +513,7 @@
         <ul>
           <li>🔒 <strong>Lokale Speicherung:</strong> Alle Daten werden nur in deinem Browser gespeichert</li>
           <li>🚫 <strong>Keine Übertragung:</strong> Keine Daten werden an Server oder Dritte gesendet</li>
-          <li>🛡️ <strong>Verschlüsselung:</strong> Daten werden verschlüsselt im localStorage gespeichert</li>
+          <li>🛡️ <strong>Verschlüsselung:</strong> Daten werden sicher im localStorage gespeichert</li>
           <li>🗑️ <strong>Löschung:</strong> Du kannst jederzeit alle Daten löschen</li>
           <li>📤 <strong>Export:</strong> Du behältst die vollständige Kontrolle über deine Daten</li>
         </ul>
