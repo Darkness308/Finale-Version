@@ -1,0 +1,214 @@
+/* Skala für Tagesgefühl */
+.scale-label-hint {
+  font-size: 0.95em;
+  color: #64748b;
+}
+.scale-container {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+}
+.scale-emoji {
+  font-size: 1.3em;
+}
+.scale-value {
+  margin-left: 0.5em;
+  font-weight: 600;
+  color: #2563eb;
+}
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95em;
+  color: #64748b;
+  margin-top: 0.2em;
+}
+.daily-actions {
+  display: flex;
+  gap: 1.2em;
+  margin-top: 1.2em;
+  flex-wrap: wrap;
+}
+/* Training Slides & Onboarding */
+.training-slides.visually-hidden {
+  display: none !important;
+}
+.slide.active {
+  display: block;
+}
+.slide {
+  display: none;
+}
+.progress-fill {
+  transition: width 0.3s;
+}
+.visually-hidden {
+  display: none !important;
+}
+/* Emotion Intensity Slider */
+.emotion-intensity-slider {
+  width: 50%;
+  accent-color: var(--emotion-color, #6366f1);
+}
+.average-intensity-value {
+  font-size: 1.2em;
+  color: #6366f1;
+  font-weight: 600;
+}
+/* 
+ * Therapeutic Workbook - Komponenten-Styles
+ * Version: 2.0.0
+ * Author: Therapy Team
+ * Date: 2025-07-02
+ */
+
+/* 🟦 Buttons */
+.btn {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  border: none;
+  background: var(--primary-color);
+  color: #fff;
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+.btn:focus {
+  outline: 2px solid var(--secondary-color);
+  outline-offset: 2px;
+}
+.btn:hover {
+  background: var(--secondary-color);
+  color: #fff;
+}
+.btn-danger {
+  background: var(--danger-color);
+}
+.btn-danger:hover {
+  background: #b91c1c;
+}
+.btn-success {
+  background: var(--success-color);
+}
+.btn-success:hover {
+  background: #059669;
+}
+.btn-secondary {
+  background: var(--gray-500);
+}
+.btn-secondary:hover {
+  background: var(--gray-700);
+}
+
+/* 🟦 Modals */
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(31, 41, 55, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: var(--transition);
+}
+.modal-content {
+  background: #fff;
+  color: var(--gray-800);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 2rem;
+  max-width: 500px;
+  width: 100%;
+  position: relative;
+}
+@media (prefers-color-scheme: dark) {
+  .modal-content {
+    background: var(--gray-100);
+    color: var(--gray-800);
+  }
+}
+
+/* 🟦 Cards */
+.card {
+  background: #fff;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: var(--transition);
+}
+.card-header {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 0.75rem;
+}
+.card-footer {
+  margin-top: 1rem;
+  text-align: right;
+}
+
+/* 🟦 Toasts */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--primary-color);
+  color: #fff;
+  padding: 1rem 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  z-index: 2000;
+  font-size: var(--font-size-base);
+  opacity: 0.95;
+  transition: var(--transition);
+}
+.toast-success {
+  background: var(--success-color);
+}
+.toast-warning {
+  background: var(--warning-color);
+  color: #856404;
+}
+.toast-danger {
+  background: var(--danger-color);
+}
+
+/* 🟦 Tabellen */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  background: #fff;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.table th, .table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--gray-200);
+}
+.table th {
+  background: var(--gray-100);
+  color: var(--gray-700);
+  font-weight: 700;
+}
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+/* 🟦 Utility: Visually Hidden (für ARIA) */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  border: 0 !important;
+}
