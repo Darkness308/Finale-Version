@@ -39,6 +39,9 @@ Dieser Plan fasst die Ansätze von Psychotherapeut, Neurologe, DBT-Spezialist un
 - **Ziel**: Verarbeitung traumatischer Erinnerungen, Wiederherstellung von Kontrolle.
 - **Stell dir vor**: Deine Erinnerungen sind wie ein kaputtes Puzzle. Der Experte hilft, die Teile sicher zusammenzusetzen.
 
+## Datenschutz & Weitergabe
+Bewahre diesen Plan an einem geschützten Ort auf und teile ihn nur mit behandelnden Fachpersonen. So bleiben deine persönlichen Daten vertraulich.
+
 ## 📅 Nächste Schritte
 - **Psychotherapeut**: Wöchentliche Sitzungen zur Bearbeitung von Komorbiditäten.
 - **Neurologe**: Regelmäßige Kontrolle von Epilepsie-Medikamenten und neuropsychologische Tests.

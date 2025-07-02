@@ -3,6 +3,9 @@
 ## 📝 Heutiges Datum
 [Hier das Datum einfügen, z. B. 29.06.2025]
 
+## Anleitung
+Trage Datum, Situation und Gedanken möglichst zeitnah ein. Verwende kurze Stichworte, um dich später besser erinnern zu können.
+
 ## 🎯 Ziel des Tagebuchs
 Dieses Tagebuch hilft dir, deine Gefühle und Auslöser (Trigger) zu erkennen und zu verstehen, wie sie mit deiner Geschichte (z. B. Traumatisierungen, neurologische Veränderungen) zusammenhängen.
 

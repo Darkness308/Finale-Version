@@ -1399,14 +1399,19 @@ Beginne deine Antwort mit einer kurzen, ermutigenden Einschätzung.`;
       const triggerDiary = JSON.parse(localStorage.getItem('triggerDiary')) || [];
       triggerDiary.forEach(entry => {
         const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${new Date(entry.date).toLocaleDateString()}</td>
-          <td>${entry.trigger}</td>
-          <td>${entry.thought}</td>
-          <td>${entry.body}</td>
-          <td>${entry.reaction}</td>
-          <td>${entry.helpful}</td>
-        `;
+        const cells = [
+          new Date(entry.date).toLocaleDateString(),
+          entry.trigger,
+          entry.thought,
+          entry.body,
+          entry.reaction,
+          entry.helpful
+        ];
+        cells.forEach(text => {
+          const td = document.createElement('td');
+          td.textContent = text;
+          row.appendChild(td);
+        });
         tbody.appendChild(row);
       });
     }
@@ -1417,61 +1422,6 @@ Beginne deine Antwort mit einer kurzen, ermutigenden Einschätzung.`;
     // Trigger-Diary Array
     if (!data.triggers) data.triggers = [];
 
-    function copyToThoughts() {
-      const thought = document.getElementById('thoughtsMood').value.trim();
-      if (thought) {
-        const taggedThought = `[Quelle: Mood-Modul] ${thought}`;
-        document.getElementById('current-thoughts').value = taggedThought;
-        saveThoughts();
-        alert('✅ Gedanke in Gedanken-Sammler übernommen!');
-      }
-    }
-
-    function copyToTriggerDiary() {
-      const situation = document.getElementById('situation').value.trim();
-      const thought = document.getElementById('thoughtsMood').value.trim();
-      const bodyReactions = Array.from(document.querySelectorAll('[name="bodyReactions"]:checked')).map(cb => cb.value);
-      const coping = document.getElementById('copingStrategy').value;
-
-      if (situation) {
-        const triggerEntry = {
-          date: new Date().toISOString(),
-          trigger: situation,
-          thought: thought || '-',
-          body: bodyReactions.join(', ') || '-',
-          reaction: coping || '-',
-          helpful: 'Noch nicht bewertet'
-        };
-        const triggerDiary = JSON.parse(localStorage.getItem('triggerDiary')) || [];
-        triggerDiary.push(triggerEntry);
-        localStorage.setItem('triggerDiary', JSON.stringify(triggerDiary));
-        alert('✅ Trigger wurde ins Trigger-Tagebuch übernommen!');
-        renderClusterTriggerTable();
-      }
-    }
-
-    function renderClusterTriggerTable() {
-      const tbody = document.getElementById('clusterTriggerTableBody');
-      tbody.innerHTML = '';
-
-      const triggerDiary = JSON.parse(localStorage.getItem('triggerDiary')) || [];
-      triggerDiary.forEach(entry => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${new Date(entry.date).toLocaleDateString()}</td>
-          <td>${entry.trigger}</td>
-          <td>${entry.thought}</td>
-          <td>${entry.body}</td>
-          <td>${entry.reaction}</td>
-          <td>${entry.helpful}</td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      renderClusterTriggerTable();
-    });
   </script>
 </body>
 </html>
