@@ -364,3 +364,81 @@ body {
   from { opacity: 0; }
   to { opacity: 0.97; }
 }
+
+/* Vier-Ohren Training Styles */
+.slide {
+  display: none;
+  background: rgba(255,255,255,0.95);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+/* .slide.active rule removed to avoid duplication; keep this style in components.css */
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.slide-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: rgba(255,255,255,0.9);
+  border-radius: 8px;
+}
+
+.slide-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.training-visual {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.four-ears-mini {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.ear {
+  background: #f3f4f6;
+  border: 2px solid #4c1d95;
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.ear:hover {
+  background: #ede9fe;
+  transform: scale(1.05);
+}
+
+.export-training {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+#ohrChart {
+  display: block;
+  margin: 1rem auto;
+  max-width: 100%;
+  background: white;
+  border-radius: 8px;
+}
