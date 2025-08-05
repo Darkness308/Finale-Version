@@ -168,7 +168,7 @@ export const StorageUtils = {
     };
 
     let content, mimeType;
-    
+
     if (format === 'markdown') {
       content = this.dataToMarkdown(exportData);
       mimeType = 'text/markdown';
@@ -177,7 +177,12 @@ export const StorageUtils = {
       mimeType = 'application/json';
     }
 
-    this.downloadFile(content, filename, mimeType);
+    // Sanitize data before invoking download to prevent injection
+    const safeContent = SecurityUtils.sanitizeInput(String(content));
+    const safeFilename = SecurityUtils.sanitizeInput(String(filename));
+
+    // downloadFile expects sanitized input
+    this.downloadFile(safeContent, safeFilename, mimeType);
   },
 
   /**
@@ -236,6 +241,8 @@ ${this.objectToMarkdown(data)}
 
   /**
    * Datei-Download
+   * Hinweis: `content` und `filename` müssen vor dem Aufruf mit
+   * SecurityUtils.sanitizeInput oder einer ähnlichen Routine bereinigt werden.
    * @param {string} content - Datei-Inhalt
    * @param {string} filename - Dateiname
    * @param {string} mimeType - MIME-Type
