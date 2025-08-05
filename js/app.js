@@ -202,6 +202,9 @@ export class TherapyWorkbook {
         case 'export-privacy-data':
           EventUtils.addSecureListener(btn, 'click', () => this.exportPrivacyData());
           break;
+        case 'confirm-consent':
+          EventUtils.addSecureListener(btn, 'click', () => this.confirmConsent());
+          break;
         // Grounding, PME, etc.
         case 'start-breathing':
           EventUtils.addSecureListener(btn, 'click', () => this.startBreathing());
@@ -618,6 +621,24 @@ export class TherapyWorkbook {
     }
   }
 
+  showConsentModal() {
+    const modal = document.getElementById('consent-modal');
+    if (modal) {
+      modal.style.display = 'block';
+      modal.setAttribute('aria-hidden', 'false');
+      A11yUtils.setFocus(modal);
+    }
+  }
+
+  confirmConsent() {
+    localStorage.setItem('consent', 'true');
+    const modal = document.getElementById('consent-modal');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+    }
+  }
+
   hideCrisis() {
     const banner = document.getElementById('crisis-banner');
     if (banner) {
@@ -937,6 +958,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Globale Referenz für Legacy-Kompatibilität
   // @ts-ignore
   window.therapyApp = app;
+  if (!localStorage.getItem('consent')) {
+    app.showConsentModal();
+  }
 });
 
 // Export für Module
