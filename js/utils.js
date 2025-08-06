@@ -113,11 +113,21 @@ export const DOMUtils = {
 // 💾 Lokaler Speicher mit Verschlüsselung
 export const StorageUtils = {
   /**
+   * Erzeugt kryptografischen Schlüssel aus statischem Passwort
+   * @returns {Promise<CryptoKey>} - AES-GCM Schlüssel
+   */
+  async _generateKey() {
+    const encoder = new TextEncoder();
+    const keyMaterial = encoder.encode('therapy_secure_key');
+    const hash = await crypto.subtle.digest('SHA-256', keyMaterial);
+    return crypto.subtle.importKey('raw', hash, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+  },
+  /**
    * Sichere Daten-Speicherung
    * @param {string} key - Speicher-Schlüssel
    * @param {any} data - Zu speichernde Daten
    */
-  setSecureData(key, data) {
+  async setSecureData(key, data) {
     try {
       const timestamp = new Date().toISOString();
       const secureData = {
@@ -125,7 +135,19 @@ export const StorageUtils = {
         timestamp: timestamp,
         version: '2.0.0'
       };
-      localStorage.setItem(`therapy_${key}`, JSON.stringify(secureData));
+
+      const encoder = new TextEncoder();
+      const encoded = encoder.encode(JSON.stringify(secureData));
+      const cryptoKey = await this._generateKey();
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, cryptoKey, encoded);
+
+      const payload = {
+        iv: Array.from(iv),
+        data: Array.from(new Uint8Array(encrypted))
+      };
+
+      localStorage.setItem(`therapy_${key}`, JSON.stringify(payload));
     } catch (error) {
       console.error('Fehler beim Speichern:', error);
     }
@@ -137,12 +159,19 @@ export const StorageUtils = {
    * @param {any} defaultValue - Standard-Wert
    * @returns {any} - Wiederhergestellte Daten
    */
-  getSecureData(key, defaultValue = null) {
+  async getSecureData(key, defaultValue = null) {
     try {
       const stored = localStorage.getItem(`therapy_${key}`);
       if (!stored) return defaultValue;
-      
-      const parsed = JSON.parse(stored);
+
+      const payload = JSON.parse(stored);
+      const iv = new Uint8Array(payload.iv);
+      const dataArray = new Uint8Array(payload.data);
+      const cryptoKey = await this._generateKey();
+      const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, cryptoKey, dataArray);
+      const decoder = new TextDecoder();
+      const decoded = decoder.decode(decrypted);
+      const parsed = JSON.parse(decoded);
       return parsed.data || defaultValue;
     } catch (error) {
       console.error('Fehler beim Laden:', error);
@@ -168,7 +197,7 @@ export const StorageUtils = {
     };
 
     let content, mimeType;
-    
+
     if (format === 'markdown') {
       content = this.dataToMarkdown(exportData);
       mimeType = 'text/markdown';
@@ -177,7 +206,12 @@ export const StorageUtils = {
       mimeType = 'application/json';
     }
 
-    this.downloadFile(content, filename, mimeType);
+    // Sanitize data before invoking download to prevent injection
+    const safeContent = SecurityUtils.sanitizeInput(String(content));
+    const safeFilename = SecurityUtils.sanitizeInput(String(filename));
+
+    // downloadFile expects sanitized input
+    this.downloadFile(safeContent, safeFilename, mimeType);
   },
 
   /**
@@ -236,6 +270,8 @@ ${this.objectToMarkdown(data)}
 
   /**
    * Datei-Download
+   * Hinweis: `content` und `filename` müssen vor dem Aufruf mit
+   * SecurityUtils.sanitizeInput oder einer ähnlichen Routine bereinigt werden.
    * @param {string} content - Datei-Inhalt
    * @param {string} filename - Dateiname
    * @param {string} mimeType - MIME-Type
@@ -301,9 +337,56 @@ export const A11yUtils = {
    * @returns {boolean} - Erfüllt WCAG AA Standard
    */
   checkColorContrast(foreground, background) {
-    // Vereinfachte Kontrast-Prüfung
-    // In Produktion würde man eine vollständige WCAG-Bibliothek verwenden
-    return true; // Placeholder für echte Implementierung
+    const parseColor = color => {
+      // Unterstützt Hex (#rgb, #rrggbb) und rgb(a)
+      if (!color) return null;
+
+      // Hex-Farben
+      const hexMatch = color.replace('#', '').match(/^([0-9a-f]{3}|[0-9a-f]{6})$/i);
+      if (hexMatch) {
+        let hex = hexMatch[1];
+        if (hex.length === 3) {
+          hex = hex.split('').map(c => c + c).join('');
+        }
+        const intVal = parseInt(hex, 16);
+        return {
+          r: (intVal >> 16) & 255,
+          g: (intVal >> 8) & 255,
+          b: intVal & 255
+        };
+      }
+
+      // rgb oder rgba
+      const rgbMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+      if (rgbMatch) {
+        return {
+          r: parseInt(rgbMatch[1], 10),
+          g: parseInt(rgbMatch[2], 10),
+          b: parseInt(rgbMatch[3], 10)
+        };
+      }
+
+      return null;
+    };
+
+    const luminance = ({ r, g, b }) => {
+      const srgb = [r, g, b].map(v => {
+        const c = v / 255;
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
+    };
+
+    const fg = parseColor(foreground);
+    const bg = parseColor(background);
+    if (!fg || !bg) return false;
+
+    const L1 = luminance(fg);
+    const L2 = luminance(bg);
+    const contrastRatio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+
+    // WCAG AA verlangt 4.5:1 Kontrast für normalen Text
+    return contrastRatio >= 4.5;
   }
 };
 

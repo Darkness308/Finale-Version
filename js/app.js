@@ -27,17 +27,17 @@ export class TherapyWorkbook {
   }
 
   // 🔧 Initialisierung
-  init() {
-    this.loadData();
+  async init() {
+    await this.loadData();
     this.bindEvents();
     this.initializeCharts();
     this.updateProgress();
-    
+
     // ARIA und Accessibility
     this.setupAccessibility();
-    
+
     // Lade gespeicherte Daten
-    
+
     ToastUtils.show('Therapie-Arbeitsbuch geladen', 'success');
   }
 
@@ -59,13 +59,13 @@ export class TherapyWorkbook {
   }
 
   // 🔒 Sichere Daten-Operationen
-  loadData() {
-    const savedData = StorageUtils.getSecureData('workbook', this.initializeData());
+  async loadData() {
+    const savedData = await StorageUtils.getSecureData('workbook', this.initializeData());
     this.data = { ...this.data, ...savedData };
   }
 
-  saveData() {
-    StorageUtils.setSecureData('workbook', this.data);
+  async saveData() {
+    await StorageUtils.setSecureData('workbook', this.data);
     this.updateProgress();
   }
 
@@ -201,6 +201,9 @@ export class TherapyWorkbook {
           break;
         case 'export-privacy-data':
           EventUtils.addSecureListener(btn, 'click', () => this.exportPrivacyData());
+          break;
+        case 'confirm-consent':
+          EventUtils.addSecureListener(btn, 'click', () => this.confirmConsent());
           break;
         // Grounding, PME, etc.
         case 'start-breathing':
@@ -424,16 +427,16 @@ export class TherapyWorkbook {
   }
 
   // 🔄 Auto-Save
-  autoSave(field) {
+  async autoSave(field) {
     if (!field.value.trim()) return;
 
-    const autoSaveData = StorageUtils.getSecureData('autosave', {});
+    const autoSaveData = await StorageUtils.getSecureData('autosave', {});
     autoSaveData[field.id] = {
       value: SecurityUtils.sanitizeInput(String(field.value)),
       timestamp: new Date().toISOString()
     };
-    
-    StorageUtils.setSecureData('autosave', autoSaveData);
+
+    await StorageUtils.setSecureData('autosave', autoSaveData);
   }
 
   // 📊 Chart-Management
@@ -581,7 +584,7 @@ export class TherapyWorkbook {
   }
 
   // 🔍 Cluster-Trigger-Analyse
-  renderClusterTriggerTable() {
+  async renderClusterTriggerTable() {
     const tbody = document.getElementById('clusterTriggerTableBody');
     if (!tbody) return;
 
@@ -590,8 +593,8 @@ export class TherapyWorkbook {
       tbody.removeChild(tbody.firstChild);
     }
 
-    const triggerDiary = StorageUtils.getSecureData('triggerDiary', []);
-    
+    const triggerDiary = await StorageUtils.getSecureData('triggerDiary', []);
+
     triggerDiary.forEach(entry => {
       const row = DOMUtils.createTableRow([
         new Date(entry.date).toLocaleDateString('de-DE'),
@@ -601,7 +604,7 @@ export class TherapyWorkbook {
         entry.reaction || '',
         entry.helpful || ''
       ]);
-      
+
       tbody.appendChild(row);
     });
 
@@ -677,6 +680,24 @@ export class TherapyWorkbook {
 
   closePrivacyModal() {
     const modal = document.getElementById('privacy-modal');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  showConsentModal() {
+    const modal = document.getElementById('consent-modal');
+    if (modal) {
+      modal.style.display = 'block';
+      modal.setAttribute('aria-hidden', 'false');
+      A11yUtils.setFocus(modal);
+    }
+  }
+
+  confirmConsent() {
+    localStorage.setItem('consent', 'true');
+    const modal = document.getElementById('consent-modal');
     if (modal) {
       modal.style.display = 'none';
       modal.setAttribute('aria-hidden', 'true');
@@ -1005,6 +1026,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Globale Referenz für Legacy-Kompatibilität
   // @ts-ignore
   window.therapyApp = app;
+  if (!localStorage.getItem('consent')) {
+    app.showConsentModal();
+  }
 });
 
 // Export für Module
