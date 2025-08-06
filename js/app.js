@@ -518,6 +518,71 @@ export class TherapyWorkbook {
     };
   }
 
+  renderOhrChart() {
+    const configs = [
+      { canvasId: 'ohrChart', selectId: 'hearing-pattern' },
+      { canvasId: 'ohrChart-training', selectId: 'hearing-pattern-training' }
+    ];
+
+    const labels = [
+      'Sach-Ohr',
+      'Selbstoffenbarungs-Ohr',
+      'Beziehungs-Ohr',
+      'Appell-Ohr'
+    ];
+    const valueOrder = ['sache', 'selbst', 'beziehung', 'appell'];
+
+    configs.forEach(({ canvasId, selectId }) => {
+      const canvas = document.getElementById(canvasId);
+      if (!(canvas instanceof HTMLCanvasElement)) return;
+
+      if (this.charts.has(canvasId)) {
+        this.charts.get(canvasId).destroy();
+      }
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const select = document.getElementById(selectId);
+      const data = [0, 0, 0, 0];
+
+      if (select && select instanceof HTMLSelectElement) {
+        const idx = valueOrder.indexOf(select.value);
+        if (idx !== -1) {
+          data[idx] = 1;
+        }
+      }
+
+      // @ts-ignore
+      const chart = new window.Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Hörmuster',
+            data,
+            backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            title: { display: true, text: 'Vier-Ohren-Modell' }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1 }
+            }
+          }
+        }
+      });
+
+      this.charts.set(canvasId, chart);
+    });
+  }
+
   // 🔍 Cluster-Trigger-Analyse
   async renderClusterTriggerTable() {
     const tbody = document.getElementById('clusterTriggerTableBody');
@@ -703,6 +768,9 @@ export class TherapyWorkbook {
   showCurrentSlide() {
     const slide = document.getElementById(`slide-${this.currentSlide}`);
     if (slide) slide.classList.add('active');
+    if (this.currentSlide === 6) {
+      this.renderOhrChart();
+    }
   }
 
   updateTrainingUI() {
