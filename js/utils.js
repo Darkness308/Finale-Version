@@ -308,9 +308,56 @@ export const A11yUtils = {
    * @returns {boolean} - Erfüllt WCAG AA Standard
    */
   checkColorContrast(foreground, background) {
-    // Vereinfachte Kontrast-Prüfung
-    // In Produktion würde man eine vollständige WCAG-Bibliothek verwenden
-    return true; // Placeholder für echte Implementierung
+    const parseColor = color => {
+      // Unterstützt Hex (#rgb, #rrggbb) und rgb(a)
+      if (!color) return null;
+
+      // Hex-Farben
+      const hexMatch = color.replace('#', '').match(/^([0-9a-f]{3}|[0-9a-f]{6})$/i);
+      if (hexMatch) {
+        let hex = hexMatch[1];
+        if (hex.length === 3) {
+          hex = hex.split('').map(c => c + c).join('');
+        }
+        const intVal = parseInt(hex, 16);
+        return {
+          r: (intVal >> 16) & 255,
+          g: (intVal >> 8) & 255,
+          b: intVal & 255
+        };
+      }
+
+      // rgb oder rgba
+      const rgbMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+      if (rgbMatch) {
+        return {
+          r: parseInt(rgbMatch[1], 10),
+          g: parseInt(rgbMatch[2], 10),
+          b: parseInt(rgbMatch[3], 10)
+        };
+      }
+
+      return null;
+    };
+
+    const luminance = ({ r, g, b }) => {
+      const srgb = [r, g, b].map(v => {
+        const c = v / 255;
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
+    };
+
+    const fg = parseColor(foreground);
+    const bg = parseColor(background);
+    if (!fg || !bg) return false;
+
+    const L1 = luminance(fg);
+    const L2 = luminance(bg);
+    const contrastRatio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+
+    // WCAG AA verlangt 4.5:1 Kontrast für normalen Text
+    return contrastRatio >= 4.5;
   }
 };
 
