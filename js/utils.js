@@ -113,11 +113,21 @@ export const DOMUtils = {
 // 💾 Lokaler Speicher mit Verschlüsselung
 export const StorageUtils = {
   /**
+   * Erzeugt kryptografischen Schlüssel aus statischem Passwort
+   * @returns {Promise<CryptoKey>} - AES-GCM Schlüssel
+   */
+  async _generateKey() {
+    const encoder = new TextEncoder();
+    const keyMaterial = encoder.encode('therapy_secure_key');
+    const hash = await crypto.subtle.digest('SHA-256', keyMaterial);
+    return crypto.subtle.importKey('raw', hash, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+  },
+  /**
    * Sichere Daten-Speicherung
    * @param {string} key - Speicher-Schlüssel
    * @param {any} data - Zu speichernde Daten
    */
-  setSecureData(key, data) {
+  async setSecureData(key, data) {
     try {
       const timestamp = new Date().toISOString();
       const secureData = {
@@ -125,7 +135,19 @@ export const StorageUtils = {
         timestamp: timestamp,
         version: '2.0.0'
       };
-      localStorage.setItem(`therapy_${key}`, JSON.stringify(secureData));
+
+      const encoder = new TextEncoder();
+      const encoded = encoder.encode(JSON.stringify(secureData));
+      const cryptoKey = await this._generateKey();
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, cryptoKey, encoded);
+
+      const payload = {
+        iv: Array.from(iv),
+        data: Array.from(new Uint8Array(encrypted))
+      };
+
+      localStorage.setItem(`therapy_${key}`, JSON.stringify(payload));
     } catch (error) {
       console.error('Fehler beim Speichern:', error);
     }
@@ -137,12 +159,19 @@ export const StorageUtils = {
    * @param {any} defaultValue - Standard-Wert
    * @returns {any} - Wiederhergestellte Daten
    */
-  getSecureData(key, defaultValue = null) {
+  async getSecureData(key, defaultValue = null) {
     try {
       const stored = localStorage.getItem(`therapy_${key}`);
       if (!stored) return defaultValue;
-      
-      const parsed = JSON.parse(stored);
+
+      const payload = JSON.parse(stored);
+      const iv = new Uint8Array(payload.iv);
+      const dataArray = new Uint8Array(payload.data);
+      const cryptoKey = await this._generateKey();
+      const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, cryptoKey, dataArray);
+      const decoder = new TextDecoder();
+      const decoded = decoder.decode(decrypted);
+      const parsed = JSON.parse(decoded);
       return parsed.data || defaultValue;
     } catch (error) {
       console.error('Fehler beim Laden:', error);
