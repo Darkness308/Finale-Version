@@ -24,6 +24,7 @@ jobs:
             texlive-fonts-extra
             texlive-latex-extra
             texlive-lang-german
+            texlive-fonts-recommended
       
       - name: Upload PDF artifact
         uses: actions/upload-artifact@v4
