@@ -1,0 +1,70 @@
+{
+  "name": "therapie-arbeitsbuch-premium",
+  "version": "2.0.0",
+  "description": "Premium therapeutisches Arbeitsbuch für Personen mit komplexer PTBS, ADHS, Borderline und Autismus-Spektrum-Störungen",
+  "main": "js/app.js",
+  "type": "module",
+  "scripts": {
+    "dev": "npx http-server -p 8080 -o",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint js/**/*.js",
+    "lint:fix": "eslint js/**/*.js --fix",
+    "format": "prettier --write \"**/*.{js,html,css,md}\"",
+    "validate": "npm run lint && npm run test",
+    "build": "echo 'No build step required - standalone HTML'",
+    "serve": "npx http-server -p 8080"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Darkness308/Finale-Version.git"
+  },
+  "keywords": [
+    "therapy",
+    "mental-health",
+    "ptsd",
+    "adhd",
+    "borderline",
+    "autism",
+    "dbt-skills",
+    "grounding",
+    "mood-tracking",
+    "self-help",
+    "offline-first",
+    "privacy",
+    "dsgvo",
+    "wcag",
+    "accessibility"
+  ],
+  "author": "Therapy Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Darkness308/Finale-Version/issues"
+  },
+  "homepage": "https://github.com/Darkness308/Finale-Version#readme",
+  "devDependencies": {
+    "@vitest/coverage-v8": "^1.0.0",
+    "eslint": "^8.55.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "happy-dom": "^12.10.3",
+    "http-server": "^14.1.1",
+    "prettier": "^3.1.1",
+    "vitest": "^1.0.0"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 Safari versions",
+    "last 2 Edge versions",
+    "not IE 11"
+  ]
+}
