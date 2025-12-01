@@ -1,0 +1,168 @@
+{
+  "name": "Therapie-Arbeitsbuch Premium",
+  "short_name": "TherapyBook",
+  "description": "Premium therapeutisches Arbeitsbuch für komplexe PTBS, ADHS, Borderline und Autismus-Spektrum-Störungen. Offline-fähig, DSGVO-konform, barrierefrei.",
+  "version": "2.0.0",
+  "start_url": "/therapy-premium.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "lang": "de-DE",
+  "dir": "ltr",
+  "categories": [
+    "health",
+    "medical",
+    "lifestyle",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop-1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Hauptansicht mit Mood-Tracking"
+    },
+    {
+      "src": "/screenshots/mobile-1.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile Ansicht - Grounding Techniken"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Neue Stimmung",
+      "short_name": "Stimmung",
+      "description": "Schnell eine neue Stimmung erfassen",
+      "url": "/therapy-premium.html#mood",
+      "icons": [
+        {
+          "src": "/icons/shortcut-mood.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Grounding",
+      "short_name": "Grounding",
+      "description": "Grounding-Techniken bei Krise",
+      "url": "/therapy-premium.html#grounding",
+      "icons": [
+        {
+          "src": "/icons/shortcut-grounding.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Statistiken",
+      "short_name": "Stats",
+      "description": "Fortschritt und Statistiken anzeigen",
+      "url": "/therapy-premium.html#export",
+      "icons": [
+        {
+          "src": "/icons/shortcut-stats.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "share_target": {
+    "action": "/therapy-premium.html",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text"
+    }
+  },
+  "prefer_related_applications": false,
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "related_applications": [],
+  "features": [
+    "Cross Platform",
+    "Offline Support",
+    "Privacy First",
+    "WCAG 2.1 AA Accessible",
+    "DSGVO Compliant",
+    "No Tracking",
+    "End-to-End Encryption"
+  ],
+  "protocol_handlers": [],
+  "file_handlers": [
+    {
+      "action": "/therapy-premium.html",
+      "accept": {
+        "application/json": [".therapy-export.json"],
+        "text/markdown": [".therapy-export.md"]
+      },
+      "name": "Therapie-Arbeitsbuch Export",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui",
+    "browser"
+  ]
+}

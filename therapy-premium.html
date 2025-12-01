@@ -2,9 +2,22 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <meta name="theme-color" content="#000000">
+  <meta name="description" content="Premium therapeutisches Arbeitsbuch für komplexe PTBS, ADHS, Borderline und Autismus. Offline-fähig, DSGVO-konform, barrierefrei.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TherapyBook">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="format-detection" content="telephone=no">
   <title>🧠 Therapie-Arbeitsbuch Premium</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- Icons -->
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png">
 
   <!-- External Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"
@@ -3086,7 +3099,319 @@ ${this.objectToMarkdown(data)}
       if (!localStorage.getItem('consent')) {
         app.showConsentModal();
       }
+
+      // 🚀 Register Service Worker (PWA Support)
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('✅ Service Worker registered:', registration.scope);
+
+            // Check for updates
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New version available
+                  if (confirm('Neue Version verfügbar! Jetzt aktualisieren?')) {
+                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                    window.location.reload();
+                  }
+                }
+              });
+            });
+          })
+          .catch(err => console.warn('Service Worker registration failed:', err));
+      }
+
+      // 📱 PWA Install Prompt
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+
+        // Show install button after 30 seconds
+        setTimeout(() => {
+          if (localStorage.getItem('pwa-install-dismissed')) return;
+
+          const installBanner = document.createElement('div');
+          installBanner.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #FFD700, #B8860B);
+            color: #000;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideUp 0.5s ease;
+          `;
+
+          installBanner.innerHTML = `
+            <div style="flex: 1;">
+              <strong style="display: block; margin-bottom: 4px;">📱 Als App installieren</strong>
+              <small>Offline-Zugriff & schnellerer Start</small>
+            </div>
+            <button id="pwa-install-btn" style="
+              background: #000;
+              color: #FFD700;
+              border: none;
+              padding: 10px 20px;
+              border-radius: 8px;
+              font-weight: bold;
+              cursor: pointer;
+              margin-left: 12px;
+            ">Installieren</button>
+            <button id="pwa-dismiss-btn" style="
+              background: transparent;
+              color: #000;
+              border: none;
+              padding: 10px;
+              cursor: pointer;
+              font-size: 20px;
+              margin-left: 8px;
+            ">×</button>
+          `;
+
+          document.body.appendChild(installBanner);
+
+          document.getElementById('pwa-install-btn').addEventListener('click', async () => {
+            installBanner.remove();
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`PWA install outcome: ${outcome}`);
+            deferredPrompt = null;
+          });
+
+          document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
+            installBanner.remove();
+            localStorage.setItem('pwa-install-dismissed', 'true');
+          });
+        }, 30000); // Show after 30 seconds
+      });
+
+      // 🎮 Initialize Hidden Features & Enhancements
+      // Note: enhancements.js would be imported as module if using external file
+      // For standalone version, core enhancements are embedded above
+
+      // Konami Code Easter Egg (↑ ↑ ↓ ↓ ← → ← → B A)
+      const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+      let konamiIndex = 0;
+      document.addEventListener('keydown', (e) => {
+        const key = e.key.toLowerCase();
+        if (key === konamiCode[konamiIndex]) {
+          konamiIndex++;
+          if (konamiIndex === konamiCode.length) {
+            konamiIndex = 0;
+            const style = document.createElement('style');
+            style.textContent = '@keyframes rainbow { 0%, 100% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(360deg); } }';
+            document.head.appendChild(style);
+            document.body.style.animation = 'rainbow 2s linear infinite';
+            ToastUtils.show('🎉 Konami Code aktiviert! Super Mode!', 'success', 5000);
+            setTimeout(() => {
+              document.body.style.animation = '';
+            }, 10000);
+          }
+        } else {
+          konamiIndex = 0;
+        }
+      });
+
+      // ⌨️ Dev Console (Ctrl+Shift+D)
+      document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+          e.preventDefault();
+          const existingConsole = document.getElementById('dev-console');
+          if (existingConsole) {
+            existingConsole.remove();
+          } else {
+            const devConsole = document.createElement('div');
+            devConsole.id = 'dev-console';
+            devConsole.style.cssText = `
+              position: fixed;
+              bottom: 0;
+              left: 0;
+              right: 0;
+              height: 200px;
+              background: rgba(0, 0, 0, 0.95);
+              border-top: 2px solid #FFD700;
+              color: #00FF00;
+              font-family: 'Courier New', monospace;
+              font-size: 12px;
+              padding: 10px;
+              overflow-y: auto;
+              z-index: 10000;
+              box-shadow: 0 -4px 20px rgba(255, 215, 0, 0.3);
+            `;
+            devConsole.innerHTML = `
+              <div style="color: #FFD700; font-weight: bold; margin-bottom: 10px;">
+                🔧 DEV CONSOLE ACTIVATED (Ctrl+Shift+D to close)
+              </div>
+              <div>Version: 2.0.0</div>
+              <div>Storage: ${Object.keys(localStorage).filter(k => k.startsWith('therapy_')).length} keys</div>
+              <div>User Agent: ${navigator.userAgent}</div>
+            `;
+            document.body.appendChild(devConsole);
+          }
+        }
+      });
+
+      // ♿ Accessibility Panel (Alt+A)
+      document.addEventListener('keydown', (e) => {
+        if (e.altKey && e.key === 'a') {
+          e.preventDefault();
+          const existingPanel = document.getElementById('a11y-panel');
+          if (existingPanel) {
+            existingPanel.style.display = existingPanel.style.display === 'none' ? 'block' : 'none';
+          } else {
+            const a11yPanel = document.createElement('div');
+            a11yPanel.id = 'a11y-panel';
+            a11yPanel.setAttribute('role', 'region');
+            a11yPanel.setAttribute('aria-label', 'Barrierefreiheits-Einstellungen');
+            a11yPanel.style.cssText = `
+              position: fixed;
+              top: 80px;
+              right: 20px;
+              background: rgba(0, 0, 0, 0.95);
+              border: 2px solid #FFD700;
+              border-radius: 12px;
+              padding: 20px;
+              z-index: 9999;
+              min-width: 250px;
+              box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+            `;
+            a11yPanel.innerHTML = `
+              <h3 style="color: #FFD700; margin-bottom: 16px; font-size: 18px;">♿ Einstellungen</h3>
+              <label style="display: block; margin-bottom: 12px; color: white;">
+                <input type="checkbox" id="highContrastToggle" style="margin-right: 8px;">
+                Hoher Kontrast
+              </label>
+              <label style="display: block; margin-bottom: 12px; color: white;">
+                <input type="checkbox" id="reducedMotionToggle" style="margin-right: 8px;">
+                Reduzierte Bewegung
+              </label>
+              <label style="display: block; margin-bottom: 12px; color: white;">
+                Schriftgröße:
+                <input type="range" id="fontSizeSlider" min="0.8" max="1.5" step="0.1" value="1.0"
+                       style="width: 100%; margin-top: 8px;">
+                <span id="fontSizeValue">100%</span>
+              </label>
+              <small style="color: #FFD700; display: block; margin-top: 16px;">Drücke Alt+A zum Schließen</small>
+            `;
+            document.body.appendChild(a11yPanel);
+
+            // High Contrast Toggle
+            document.getElementById('highContrastToggle').addEventListener('change', (e) => {
+              if (e.target.checked) {
+                document.documentElement.style.setProperty('--color-gold', '#FFFF00');
+                document.documentElement.style.setProperty('--glass-bg', 'rgba(255, 255, 255, 0.15)');
+              } else {
+                document.documentElement.style.setProperty('--color-gold', '#FFD700');
+                document.documentElement.style.setProperty('--glass-bg', 'rgba(255, 255, 255, 0.05)');
+              }
+            });
+
+            // Reduced Motion Toggle
+            document.getElementById('reducedMotionToggle').addEventListener('change', (e) => {
+              if (e.target.checked) {
+                const style = document.createElement('style');
+                style.id = 'reduced-motion-style';
+                style.textContent = '* { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }';
+                document.head.appendChild(style);
+              } else {
+                const style = document.getElementById('reduced-motion-style');
+                if (style) style.remove();
+              }
+            });
+
+            // Font Size Slider
+            document.getElementById('fontSizeSlider').addEventListener('input', (e) => {
+              const scale = parseFloat(e.target.value);
+              document.documentElement.style.fontSize = `${16 * scale}px`;
+              document.getElementById('fontSizeValue').textContent = `${Math.round(scale * 100)}%`;
+              localStorage.setItem('fontScale', scale);
+            });
+
+            // Restore saved font size
+            const savedScale = localStorage.getItem('fontScale');
+            if (savedScale) {
+              document.getElementById('fontSizeSlider').value = savedScale;
+              document.documentElement.style.fontSize = `${16 * parseFloat(savedScale)}px`;
+              document.getElementById('fontSizeValue').textContent = `${Math.round(parseFloat(savedScale) * 100)}%`;
+            }
+          }
+        }
+      });
+
+      // 📱 Mobile: Optimize touch targets on touch devices
+      if ('ontouchstart' in window) {
+        const MIN_SIZE = 44;
+        document.querySelectorAll('button, a, input[type="button"], input[type="submit"]').forEach(el => {
+          const rect = el.getBoundingClientRect();
+          if (rect.width < MIN_SIZE || rect.height < MIN_SIZE) {
+            el.style.minWidth = `${MIN_SIZE}px`;
+            el.style.minHeight = `${MIN_SIZE}px`;
+            el.style.display = 'inline-flex';
+            el.style.alignItems = 'center';
+            el.style.justifyContent = 'center';
+          }
+        });
+      }
+
+      console.log('✅ All enhancements initialized!');
     });
   </script>
+
+  <!-- CSS Animations for Enhancements -->
+  <style>
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Mobile: Smooth scrolling momentum */
+    @media (max-width: 768px) {
+      body, .content-section {
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Larger touch targets */
+      button, .btn, a {
+        min-height: 44px;
+        min-width: 44px;
+      }
+
+      /* Prevent text selection on buttons */
+      button, .btn {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        user-select: none;
+      }
+    }
+
+    /* High contrast mode adjustments */
+    [data-high-contrast="true"] {
+      --color-gold: #FFFF00 !important;
+      --glass-bg: rgba(255, 255, 255, 0.15) !important;
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
 </body>
 </html>
